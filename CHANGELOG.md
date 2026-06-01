@@ -35,3 +35,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2026-05-31
 
 Initial release.
+
+## [0.4.0] - 2026-06-01
+
+### Improved Monitoring Accuracy
+- Packet loss is now measured with **~250 rapid pings per 30-second sample** (much higher statistical confidence)
+- Replaced simple loss bars with proper vertical time-series graph
+- Added detailed legend inside the tool (option 7)
+- Live dashboard now shows exact ping count used per sample
+
