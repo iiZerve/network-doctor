@@ -116,3 +116,42 @@ if ($installAsModule -eq 'yes') {
 }
 
 
+
+# --- Create Desktop and Start Menu shortcuts (makes launching painless) ---
+Write-Host ""
+$createShortcuts = Read-Host "Create Desktop + Start Menu shortcuts for easy launching? (yes/no)"
+if ($createShortcuts -eq 'yes') {
+    try {
+        $WshShell = New-Object -ComObject WScript.Shell
+        
+        $target = Join-Path $InstallPath "network-doctor.cmd"
+        $workingDir = $InstallPath
+        
+        # Desktop shortcut
+        $desktop = [Environment]::GetFolderPath("Desktop")
+        $desktopShortcut = $WshShell.CreateShortcut("$desktop\Network Doctor.lnk")
+        $desktopShortcut.TargetPath = $target
+        $desktopShortcut.WorkingDirectory = $workingDir
+        $desktopShortcut.Description = "Launch Network Doctor - Advanced network diagnostics"
+        $desktopShortcut.Save()
+        Write-Host "Desktop shortcut created: $desktop\Network Doctor.lnk" -ForegroundColor Green
+
+        # Start Menu shortcut
+        $startMenuPrograms = [Environment]::GetFolderPath("StartMenu")
+        $startMenuFolder = Join-Path $startMenuPrograms "Programs\Network Doctor"
+        if (!(Test-Path $startMenuFolder)) {
+            New-Item -ItemType Directory -Path $startMenuFolder -Force | Out-Null
+        }
+        $startMenuShortcut = $WshShell.CreateShortcut("$startMenuFolder\Network Doctor.lnk")
+        $startMenuShortcut.TargetPath = $target
+        $startMenuShortcut.WorkingDirectory = $workingDir
+        $startMenuShortcut.Description = "Launch Network Doctor"
+        $startMenuShortcut.Save()
+        Write-Host "Start Menu shortcut created." -ForegroundColor Green
+
+        Write-Host "`nYou can now launch Network Doctor from the Desktop or Start Menu." -ForegroundColor Cyan
+    } catch {
+        Write-Host "Could not create shortcuts automatically: $_" -ForegroundColor Yellow
+        Write-Host "You can create them manually if needed." -ForegroundColor Yellow
+    }
+}
