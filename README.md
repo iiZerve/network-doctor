@@ -70,6 +70,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
 
 The installer will:
+The installer now **automatically removes any previous broken or corrupted files** before installing the new version. This prevents the parser errors you were seeing earlier.
 - Copy the tool to `C:\Users\YourName\Tools`
 - Create a `network-doctor` command
 - Optionally add the folder to your PATH
@@ -225,6 +226,7 @@ If you see "running scripts is disabled on this system" when trying to run `.ps1
 ```
 
 This bypasses the PowerShell execution policy restriction.
+
 
 
 

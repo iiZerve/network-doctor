@@ -25,6 +25,21 @@ Write-Host "Version: 0.2.0`n" -ForegroundColor DarkGray
 if (!(Test-Path $InstallPath)) {
     New-Item -ItemType Directory -Path $InstallPath -Force | Out-Null
     Write-Host "Created: $InstallPath" -ForegroundColor Green
+# --- Clean up any previous broken/corrupted installation files ---
+$filesToClean = @(
+    (Join-Path $InstallPath "NetworkDoctor.ps1"),
+    (Join-Path $InstallPath "network-doctor.cmd"),
+    (Join-Path $InstallPath "network-doctor.bat"),
+    (Join-Path $InstallPath "NetworkDoctor.ps1.bak")
+)
+
+foreach ($file in $filesToClean) {
+    if (Test-Path $file) {
+        Remove-Item $file -Force -ErrorAction SilentlyContinue
+        Write-Host "Removed old/broken file: $(Split-Path $file -Leaf)" -ForegroundColor DarkGray
+    }
+}
+
 }
 
 # Copy main script
@@ -155,3 +170,4 @@ if ($createShortcuts -eq 'yes') {
         Write-Host "You can create them manually if needed." -ForegroundColor Yellow
     }
 }
+
