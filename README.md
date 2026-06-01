@@ -1,4 +1,4 @@
-# grok-network-doctor
+# network-doctor
 
 An advanced, opinionated PowerShell toolkit for diagnosing and mitigating unstable cable internet connections — specifically built around the **Hitron CGM4331SHW** (common Rogers/Shaw Ignite Gateway) + Intel Wi-Fi 6 AX201 adapter combination.
 
@@ -47,8 +47,8 @@ This tool was built to:
 
 ```powershell
 # Clone the repo
-git clone https://github.com/YOUR_USERNAME/grok-network-doctor.git
-cd grok-network-doctor
+git clone https://github.com/YOUR_USERNAME/network-doctor.git
+cd network-doctor
 
 # Run the tool
 powershell -ExecutionPolicy Bypass -File ".\src\AdvancedNetworkMonitor.ps1"
@@ -76,6 +76,8 @@ The tool has an interactive menu with these main options:
 
 ## Contributing
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
 This project started as a personal troubleshooting tool. Contributions, ideas, and improvements (especially around Rogers/Shaw gateway behavior) are very welcome.
 
 ## License
@@ -85,3 +87,9 @@ MIT License
 ## Disclaimer
 
 This is a client-side diagnostic and optimization tool only. It does not modify your ISP equipment. All responsibility for changes made via the optimization features lies with the user.
+
+
+
+## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for current status and future plans.
