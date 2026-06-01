@@ -213,3 +213,15 @@ cd network-doctor
 Start-NetworkDoctor
 ```
 
+
+
+
+### Important: Execution Policy Issues
+
+If you see "running scripts is disabled on this system" when trying to run `.ps1` files, use the provided `.cmd` launcher instead:
+
+```cmd
+.\NetworkDoctor.cmd
+```
+
+This bypasses the PowerShell execution policy restriction.
