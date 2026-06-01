@@ -56,10 +56,54 @@ if ($CreateAlias) {
     } else {
         Write-Host "network-doctor function already exists in your profile." -ForegroundColor Yellow
     }
+    # Check execution policy
+    $currentPolicy = Get-ExecutionPolicy -Scope CurrentUser
+    if ($currentPolicy -eq "Restricted" -or $currentPolicy -eq "AllSigned") {
+        Write-Host ""
+        Write-Warning "Your CurrentUser execution policy is too restrictive ($currentPolicy)."
+        Write-Host "The alias will be added, but you won't be able to use it until you fix the policy." -ForegroundColor Yellow
+        $fix = Read-Host "Would you like to set execution policy to RemoteSigned for CurrentUser? (yes/no)"
+        if ($fix -eq "yes") {
+            Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+            Write-Host "Execution policy set to RemoteSigned for CurrentUser." -ForegroundColor Green
+            Write-Host "You may still need to restart PowerShell." -ForegroundColor Yellow
+        }
+    }
+
+    # Try to load the profile in current session if possible
+    try {
+        . $PROFILE.CurrentUserAllHosts -ErrorAction Stop
+        Write-Host "Profile reloaded successfully in current session." -ForegroundColor Green
+    } catch {
+        Write-Host "Could not reload profile in this session (common in elevated prompts)." -ForegroundColor Yellow
+        Write-Host "Restart PowerShell after installation for the alias to work." -ForegroundColor Yellow
+    }
 }
 
 Write-Host "`nInstallation complete!" -ForegroundColor Green
 Write-Host "Run with: powershell -File `$env:USERPROFILE\Tools\NetworkDoctor.ps1" -ForegroundColor Cyan
 if ($CreateAlias) {
     Write-Host "Or simply type: network-doctor" -ForegroundColor White
+    # Check execution policy
+    $currentPolicy = Get-ExecutionPolicy -Scope CurrentUser
+    if ($currentPolicy -eq "Restricted" -or $currentPolicy -eq "AllSigned") {
+        Write-Host ""
+        Write-Warning "Your CurrentUser execution policy is too restrictive ($currentPolicy)."
+        Write-Host "The alias will be added, but you won't be able to use it until you fix the policy." -ForegroundColor Yellow
+        $fix = Read-Host "Would you like to set execution policy to RemoteSigned for CurrentUser? (yes/no)"
+        if ($fix -eq "yes") {
+            Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+            Write-Host "Execution policy set to RemoteSigned for CurrentUser." -ForegroundColor Green
+            Write-Host "You may still need to restart PowerShell." -ForegroundColor Yellow
+        }
+    }
+
+    # Try to load the profile in current session if possible
+    try {
+        . $PROFILE.CurrentUserAllHosts -ErrorAction Stop
+        Write-Host "Profile reloaded successfully in current session." -ForegroundColor Green
+    } catch {
+        Write-Host "Could not reload profile in this session (common in elevated prompts)." -ForegroundColor Yellow
+        Write-Host "Restart PowerShell after installation for the alias to work." -ForegroundColor Yellow
+    }
 }
