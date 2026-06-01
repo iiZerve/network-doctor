@@ -1,87 +1,75 @@
 <#
 .SYNOPSIS
-    Installs Network Doctor and makes it easy to run from anywhere.
+    Installs Network Doctor and makes it easy to launch from anywhere.
 
 .DESCRIPTION
-    This installer:
-    - Copies the tool to your Tools folder
-    - Creates a simple 'network-doctor' command (shim)
-    - Optionally adds the Tools folder to your PATH
-    - Handles execution policy issues gracefully
+    This is the recommended way to install Network Doctor.
+    It will:
+      - Copy the tool to your user Tools folder
+      - Create a 'network-doctor' command you can run from anywhere
+      - Add the folder to your PATH (so you can just type network-doctor)
 #>
 
 [CmdletBinding()]
 param(
     [string]$InstallPath = "$env:USERPROFILE\Tools",
-    [switch]$AddToPath,
     [switch]$Force
 )
 
 $ErrorActionPreference = 'Stop'
 
 Write-Host "`n=== Network Doctor Installer ===" -ForegroundColor Cyan
+Write-Host "Version: 0.2.0`n" -ForegroundColor DarkGray
 
-# --- 1. Create install directory ---
+# Create Tools folder if it doesn't exist
 if (!(Test-Path $InstallPath)) {
     New-Item -ItemType Directory -Path $InstallPath -Force | Out-Null
-    Write-Host "Created folder: $InstallPath" -ForegroundColor Green
+    Write-Host "Created: $InstallPath" -ForegroundColor Green
 }
 
-# --- 2. Copy the main script ---
-$sourceScript = Join-Path $PSScriptRoot "src\AdvancedNetworkMonitor.ps1"
-$targetScript = Join-Path $InstallPath "NetworkDoctor.ps1"
+# Copy main script
+$source = Join-Path $PSScriptRoot "src\AdvancedNetworkMonitor.ps1"
+$target = Join-Path $InstallPath "NetworkDoctor.ps1"
 
-if (!(Test-Path $sourceScript)) {
-    Write-Error "Could not find the main script. Make sure you're running install.ps1 from the repository root."
+if (!(Test-Path $source)) {
+    Write-Error "Could not find the main script. Please run this from the repository root."
 }
 
-Copy-Item $sourceScript $targetScript -Force
-Write-Host "Installed script to: $targetScript" -ForegroundColor Green
+Copy-Item $source $target -Force
+Write-Host "Installed script → $target" -ForegroundColor Green
 
-# --- 3. Create a simple .cmd shim (this is the magic for easy launching) ---
-$shimPath = Join-Path $InstallPath "network-doctor.cmd"
+# Create the command shim (this is what lets you type 'network-doctor')
+$shim = Join-Path $InstallPath "network-doctor.cmd"
 $shimContent = @"
 @echo off
 powershell -NoProfile -ExecutionPolicy Bypass -File "%USERPROFILE%\Tools\NetworkDoctor.ps1" %*
 "@
+$shimContent | Out-File -FilePath $shim -Encoding ASCII -Force
+Write-Host "Created command  → network-doctor" -ForegroundColor Green
 
-$shimContent | Out-File -FilePath $shimPath -Encoding ASCII -Force
-Write-Host "Created command: network-doctor.cmd" -ForegroundColor Green
-
-# --- 4. Handle PATH ---
-$toolsInPath = $env:Path -split ';' | Where-Object { $_ -eq $InstallPath }
-
-if (-not $toolsInPath -and -not $AddToPath) {
+# Automatically add to PATH if not already there (with clear feedback)
+$currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
+if ($currentPath -notlike "*$InstallPath*") {
     Write-Host ""
-    $response = Read-Host "Add $InstallPath to your PATH so you can just type 'network-doctor'? (yes/no)"
-    if ($response -eq 'yes') {
-        $AddToPath = $true
-    }
+    Write-Host "Adding $InstallPath to your PATH..." -ForegroundColor Yellow
+    [Environment]::SetEnvironmentVariable("Path", "$currentPath;$InstallPath", "User")
+    Write-Host "Done! You will need to restart your terminal for this to take effect." -ForegroundColor Green
+} else {
+    Write-Host "$InstallPath is already in your PATH." -ForegroundColor DarkGray
 }
 
-if ($AddToPath) {
-    $currentUserPath = [Environment]::GetEnvironmentVariable("Path", "User")
-    if ($currentUserPath -notlike "*$InstallPath*") {
-        [Environment]::SetEnvironmentVariable("Path", "$currentUserPath;$InstallPath", "User")
-        Write-Host "Added $InstallPath to your user PATH." -ForegroundColor Green
-        Write-Host "You will need to restart your terminal / VS Code for this to take effect." -ForegroundColor Yellow
-    } else {
-        Write-Host "$InstallPath is already in your PATH." -ForegroundColor Yellow
-    }
-}
-
-# --- 5. Execution Policy Check (helpful) ---
-$currentPolicy = Get-ExecutionPolicy -Scope CurrentUser
-if ($currentPolicy -eq 'Restricted') {
+# Friendly execution policy check
+$policy = Get-ExecutionPolicy -Scope CurrentUser
+if ($policy -eq 'Restricted') {
     Write-Host ""
-    Write-Warning "Your CurrentUser execution policy is set to Restricted."
-    $fixPolicy = Read-Host "Would you like to set it to RemoteSigned so scripts can run? (yes/no)"
-    if ($fixPolicy -eq 'yes') {
+    Write-Warning "Your execution policy is currently Restricted."
+    $answer = Read-Host "Would you like to change it to RemoteSigned so the tool can run? (yes/no)"
+    if ($answer -eq 'yes') {
         try {
             Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-            Write-Host "Execution policy set to RemoteSigned for CurrentUser." -ForegroundColor Green
+            Write-Host "Execution policy updated to RemoteSigned." -ForegroundColor Green
         } catch {
-            Write-Host "Failed to change execution policy. You may need to run this as Administrator or do it manually." -ForegroundColor Red
+            Write-Host "Could not change policy automatically. You may need to run this as Administrator once." -ForegroundColor Yellow
         }
     }
 }
@@ -89,7 +77,7 @@ if ($currentPolicy -eq 'Restricted') {
 Write-Host ""
 Write-Host "Installation complete!" -ForegroundColor Green
 Write-Host ""
-Write-Host "You can now run the tool by typing:" -ForegroundColor Cyan
+Write-Host "You can now open a new terminal and simply type:" -ForegroundColor Cyan
 Write-Host "    network-doctor" -ForegroundColor White
 Write-Host ""
-Write-Host "Note: If you just added the folder to PATH, restart your terminal first." -ForegroundColor Yellow
+Write-Host "Tip: Restart your terminal / VS Code for PATH changes to apply." -ForegroundColor Yellow

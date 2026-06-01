@@ -37,7 +37,29 @@ This tool was built to:
   - Easily log gateway light states (`light solid red`, `light blinking green`, etc.) during outages
 
 
-## Installation
+## Installation (Recommended)
+
+The fastest way to get started:
+
+```powershell
+git clone https://github.com/iiZerve/network-doctor.git
+cd network-doctor
+
+powershell -ExecutionPolicy Bypass -File .\install.ps1
+```
+
+This will:
+- Install the tool to `C:\Users\YourName\Tools`
+- Create a `network-doctor` command
+- Add the folder to your PATH
+
+After running the installer, **restart your terminal**, then just type:
+
+```powershell
+network-doctor
+```
+
+That's it.
 
 ### Recommended Method (Simplest)
 
@@ -147,6 +169,7 @@ This is a client-side diagnostic and optimization tool only. It does not modify 
 ## Roadmap
 
 See [ROADMAP.md](ROADMAP.md) for current status and future plans.
+
 
 
 

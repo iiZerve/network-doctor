@@ -1,3 +1,5 @@
+
+$script:Version = "0.2.0"
 <#
 .SYNOPSIS
     Grok Advanced Network Doctor v2 - Full monitoring + diagnostics + optimization + support report generator.
@@ -314,3 +316,4 @@ while ($true) {
         default { Write-Host "Invalid" }
     }
 }
+
