@@ -81,3 +81,14 @@ Write-Host "You can now open a new terminal and simply type:" -ForegroundColor C
 Write-Host "    network-doctor" -ForegroundColor White
 Write-Host ""
 Write-Host "Tip: Restart your terminal / VS Code for PATH changes to apply." -ForegroundColor Yellow
+
+# --- Optional: Install as PowerShell module ---
+$installAsModule = Read-Host "`nWould you also like to install Network Doctor as a PowerShell module? (yes/no)"
+if ($installAsModule -eq 'yes') {
+    $modulePath = Join-Path $InstallPath "NetworkDoctor"
+    if (!(Test-Path $modulePath)) { New-Item -ItemType Directory -Path $modulePath -Force | Out-Null }
+
+    Copy-Item -Path (Join-Path $PSScriptRoot "src\NetworkDoctor\*") -Destination $modulePath -Recurse -Force
+    Write-Host "Module installed to: $modulePath" -ForegroundColor Green
+    Write-Host "You can now use: Import-Module NetworkDoctor" -ForegroundColor Cyan
+}

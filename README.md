@@ -175,3 +175,23 @@ See [ROADMAP.md](ROADMAP.md) for current status and future plans.
 
 
 
+
+
+
+## Using as a PowerShell Module (Advanced)
+
+If you install via the module option, you can do:
+
+```powershell
+Import-Module NetworkDoctor
+
+# Launch the full tool
+Start-NetworkDoctor
+
+# Update the tool from GitHub
+Update-NetworkDoctor
+
+# Run diagnostics programmatically
+Get-NetworkDiagnostics
+```
+

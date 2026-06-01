@@ -1,7 +1,21 @@
 <#
 .SYNOPSIS
-    Convenience launcher for Network Doctor.
+    Network Doctor Launcher
 .DESCRIPTION
-    Runs the main Network Doctor tool from the repository root.
+    Launches Network Doctor. Prefers the installed module if available.
 #>
-& "$PSScriptRoot\src\AdvancedNetworkMonitor.ps1" @args
+
+$module = Get-Module -ListAvailable NetworkDoctor -ErrorAction SilentlyContinue | Sort-Object Version -Descending | Select-Object -First 1
+
+if ($module) {
+    Import-Module NetworkDoctor -Force
+    Start-NetworkDoctor
+} else {
+    # Fallback to the script in this repo
+    $scriptPath = Join-Path $PSScriptRoot "src\AdvancedNetworkMonitor.ps1"
+    if (Test-Path $scriptPath) {
+        & $scriptPath @args
+    } else {
+        Write-Error "Could not find Network Doctor. Please run the installer or ensure the script exists."
+    }
+}
