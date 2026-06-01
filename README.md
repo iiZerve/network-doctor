@@ -231,3 +231,14 @@ This bypasses the PowerShell execution policy restriction.
 
 
 
+
+
+### Force Reinstall (if you have corrupted files)
+
+If the tool is flashing errors or the installed files got messed up, use:
+
+```powershell
+.\install.cmd -Force
+```
+
+This will aggressively delete any old/broken `NetworkDoctor.ps1` and shims before installing fresh copies.
