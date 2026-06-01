@@ -22,7 +22,7 @@ $Config = @{
     GatewayIP       = "10.0.0.1"
     HomeSSID        = "SHAW-CC01"
     LogDir          = "$env:USERPROFILE\NetworkLogs"
-    Interval        = 5
+    Interval        = 30
 }
 
 if (!(Test-Path $Config.LogDir)) { New-Item -ItemType Directory -Path $Config.LogDir -Force | Out-Null }
@@ -93,7 +93,7 @@ function Get-CurrentContext {
 }
 
 function Get-PingStats {
-    param([string[]]$Targets, [int]$Count = 3)
+    param([string[]]$Targets, [int]$Count = 25)
     $latencies = @(); $success = 0
     foreach ($t in $Targets) {
         try {
@@ -250,7 +250,9 @@ function Start-Monitoring {
     Write-Host "`n=== MONITORING STARTED ===" -ForegroundColor Cyan
     Write-Host "Type notes like 'light solid red' or 'light blinking green' for best results.`n"
 
-    while ($true) {
+    $lossHistory = [System.Collections.Generic.List[object]]::new()
+
+while ($true) {
         $ts = Get-Date
         $ctx = Get-CurrentContext
         $gw = $false; try { $gw = Test-Connection -ComputerName $Config.GatewayIP -Count 1 -Quiet } catch {}
@@ -291,7 +293,45 @@ function Start-Monitoring {
     }
 }
 
+
+function Show-LossGraph {
+    param([array]$History, [int]$Width = 50)
+    if ($History.Count -eq 0) { return }
+    
+    Write-Host "`nPacket Loss History (last $($History.Count) samples, 30s each):" -ForegroundColor Cyan
+    
+    $max = 100
+    $barWidth = 40
+    
+    foreach ($entry in $History) {
+        $loss = [math]::Min(100, [math]::Max(0, $entry.Loss))
+        $filled = [math]::Floor(($loss / 100) * $barWidth)
+        $bar = ('█' * $filled) + ('░' * ($barWidth - $filled))
+        $time = $entry.Time.ToString('HH:mm:ss')
+        Write-Host ("  {0} | {1} {2,5}%" -f $time, $bar, $loss)
+    }
+}
+
 # ==================== MAIN MENU ====================
+
+function Show-LossGraph {
+    param([array]$History, [int]$Width = 50)
+    if ($History.Count -eq 0) { return }
+    
+    Write-Host "`nPacket Loss History (last $($History.Count) samples, 30s each):" -ForegroundColor Cyan
+    
+    $max = 100
+    $barWidth = 40
+    
+    foreach ($entry in $History) {
+        $loss = [math]::Min(100, [math]::Max(0, $entry.Loss))
+        $filled = [math]::Floor(($loss / 100) * $barWidth)
+        $bar = ('█' * $filled) + ('░' * ($barWidth - $filled))
+        $time = $entry.Time.ToString('HH:mm:ss')
+        Write-Host ("  {0} | {1} {2,5}%" -f $time, $bar, $loss)
+    }
+}
+
 # ==================== MAIN MENU ====================
 function Show-MainMenu {
     Clear-Host
@@ -309,6 +349,8 @@ function Show-MainMenu {
     Write-Host "  [0]  Exit                             " -ForegroundColor Red
     Write-Host ""
 }
+
+$lossHistory = [System.Collections.Generic.List[object]]::new()
 
 while ($true) {
     Show-MainMenu
@@ -351,4 +393,9 @@ while ($true) {
         }
     }
 }
+
+
+
+
+
 
