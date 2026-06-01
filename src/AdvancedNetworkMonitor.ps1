@@ -295,9 +295,9 @@ function Start-Monitoring {
 # ==================== MAIN MENU ====================
 function Show-MainMenu {
     Clear-Host
-    Write-Host "╔════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║              NETWORK DOCTOR v$script:Version                    ║" -ForegroundColor Cyan
-    Write-Host "╚════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host "==============================================================" -ForegroundColor Cyan
+    Write-Host "              NETWORK DOCTOR v$script:Version                    " -ForegroundColor Cyan
+    Write-Host "==============================================================" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "  [1]  Start Monitoring + Logging" -ForegroundColor White
     Write-Host "  [2]  Run Diagnostics + Recommendations" -ForegroundColor White
@@ -351,3 +351,4 @@ while ($true) {
         }
     }
 }
+

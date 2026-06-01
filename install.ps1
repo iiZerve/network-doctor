@@ -80,6 +80,9 @@ Write-Host ""
 Write-Host "You can now open a new terminal and simply type:" -ForegroundColor Cyan
 Write-Host "    network-doctor" -ForegroundColor White
 Write-Host ""
+Write-Host "Alternative (most reliable when execution policy is strict):" -ForegroundColor Yellow
+Write-Host "    .\NetworkDoctor.cmd   (from the repo folder)" -ForegroundColor White
+Write-Host ""
 Write-Host "Tip: Restart your terminal / VS Code for PATH changes to apply." -ForegroundColor Yellow
 
 # --- Optional: Install as PowerShell module (recommended for advanced use) ---
@@ -106,4 +109,5 @@ if ($installAsModule -eq 'yes') {
         Write-Host "Module source not found. Skipping module installation." -ForegroundColor Yellow
     }
 }
+
 

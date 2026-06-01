@@ -198,23 +198,24 @@ Get-NetworkDiagnostics
 
 
 
-## Running from Source (No Installation)
+## Quick Start (Simplest Way)
 
-If you just want to test the latest version without installing:
+After cloning:
 
 ```powershell
 cd network-doctor
 
-# Easiest (recommended)
-.\NetworkDoctor.ps1
-
-# Or load as module for development
-.\Load-FromSource.ps1
-Start-NetworkDoctor
+# Recommended on most systems (works even with restricted execution policy)
+.\NetworkDoctor.cmd
 ```
 
+Or after installing via the installer, just type:
 
+```powershell
+network-doctor
+```
 
+The `.cmd` launcher is the most reliable way when PowerShell execution policies are restrictive (very common in corporate or elevated sessions).
 
 ### Important: Execution Policy Issues
 
@@ -225,3 +226,4 @@ If you see "running scripts is disabled on this system" when trying to run `.ps1
 ```
 
 This bypasses the PowerShell execution policy restriction.
+
