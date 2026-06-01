@@ -36,8 +36,29 @@ This tool was built to:
 - **Manual Observation Logging**
   - Easily log gateway light states (`light solid red`, `light blinking green`, etc.) during outages
 
-## Getting Started
 
+## Installation
+
+### Option 1: Using the installer (Recommended)
+
+```powershell
+git clone https://github.com/iiZerve/network-doctor.git
+cd network-doctor
+
+# Run the installer
+powershell -ExecutionPolicy Bypass -File .\install.ps1 -CreateAlias
+```
+
+After installation you can simply type `network-doctor` in PowerShell.
+
+### Option 2: Manual
+
+```powershell
+git clone https://github.com/iiZerve/network-doctor.git
+cd network-doctor
+
+powershell -ExecutionPolicy Bypass -File ".\src\AdvancedNetworkMonitor.ps1"
+```
 ### Requirements
 - Windows 10/11
 - PowerShell 5.1 or PowerShell 7+
@@ -93,5 +114,6 @@ This is a client-side diagnostic and optimization tool only. It does not modify 
 ## Roadmap
 
 See [ROADMAP.md](ROADMAP.md) for current status and future plans.
+
 
 
