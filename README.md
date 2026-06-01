@@ -39,6 +39,39 @@ This tool was built to:
 
 ## Installation
 
+### Recommended Method (Simplest)
+
+```powershell
+git clone https://github.com/iiZerve/network-doctor.git
+cd network-doctor
+
+powershell -ExecutionPolicy Bypass -File .\install.ps1
+```
+
+The installer will:
+- Copy the tool to `C:\Users\YourName\Tools`
+- Create a `network-doctor` command
+- Optionally add the folder to your PATH
+
+After installation (and restarting your terminal), you can simply type:
+
+```powershell
+network-doctor
+```
+
+### Alternative: Run directly from the folder
+
+```powershell
+cd network-doctor
+.\network-doctor.cmd
+```
+
+Or:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\src\AdvancedNetworkMonitor.ps1
+```
+
 ### Option 1: Using the installer (Recommended)
 
 ```powershell
@@ -114,6 +147,7 @@ This is a client-side diagnostic and optimization tool only. It does not modify 
 ## Roadmap
 
 See [ROADMAP.md](ROADMAP.md) for current status and future plans.
+
 
 
 

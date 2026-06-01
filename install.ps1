@@ -1,109 +1,95 @@
 <#
 .SYNOPSIS
-    Installs Network Doctor for easy use.
+    Installs Network Doctor and makes it easy to run from anywhere.
+
+.DESCRIPTION
+    This installer:
+    - Copies the tool to your Tools folder
+    - Creates a simple 'network-doctor' command (shim)
+    - Optionally adds the Tools folder to your PATH
+    - Handles execution policy issues gracefully
 #>
 
 [CmdletBinding()]
 param(
     [string]$InstallPath = "$env:USERPROFILE\Tools",
     [switch]$AddToPath,
-    [switch]$CreateAlias
+    [switch]$Force
 )
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
 
-Write-Host "Installing Network Doctor..." -ForegroundColor Cyan
+Write-Host "`n=== Network Doctor Installer ===" -ForegroundColor Cyan
 
+# --- 1. Create install directory ---
 if (!(Test-Path $InstallPath)) {
     New-Item -ItemType Directory -Path $InstallPath -Force | Out-Null
-    Write-Host "Created directory: $InstallPath" -ForegroundColor Green
+    Write-Host "Created folder: $InstallPath" -ForegroundColor Green
 }
 
-$source = Join-Path $PSScriptRoot "src\AdvancedNetworkMonitor.ps1"
-$destination = Join-Path $InstallPath "NetworkDoctor.ps1"
+# --- 2. Copy the main script ---
+$sourceScript = Join-Path $PSScriptRoot "src\AdvancedNetworkMonitor.ps1"
+$targetScript = Join-Path $InstallPath "NetworkDoctor.ps1"
 
-if (!(Test-Path $source)) {
-    Write-Error "Could not find source script at: $source"
-    exit 1
+if (!(Test-Path $sourceScript)) {
+    Write-Error "Could not find the main script. Make sure you're running install.ps1 from the repository root."
 }
 
-Copy-Item -Path $source -Destination $destination -Force
-Write-Host "Installed to: $destination" -ForegroundColor Green
+Copy-Item $sourceScript $targetScript -Force
+Write-Host "Installed script to: $targetScript" -ForegroundColor Green
+
+# --- 3. Create a simple .cmd shim (this is the magic for easy launching) ---
+$shimPath = Join-Path $InstallPath "network-doctor.cmd"
+$shimContent = @"
+@echo off
+powershell -NoProfile -ExecutionPolicy Bypass -File "%USERPROFILE%\Tools\NetworkDoctor.ps1" %*
+"@
+
+$shimContent | Out-File -FilePath $shimPath -Encoding ASCII -Force
+Write-Host "Created command: network-doctor.cmd" -ForegroundColor Green
+
+# --- 4. Handle PATH ---
+$toolsInPath = $env:Path -split ';' | Where-Object { $_ -eq $InstallPath }
+
+if (-not $toolsInPath -and -not $AddToPath) {
+    Write-Host ""
+    $response = Read-Host "Add $InstallPath to your PATH so you can just type 'network-doctor'? (yes/no)"
+    if ($response -eq 'yes') {
+        $AddToPath = $true
+    }
+}
 
 if ($AddToPath) {
-    $currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
-    if ($currentPath -notlike "*$InstallPath*") {
-        [Environment]::SetEnvironmentVariable("Path", "$currentPath;$InstallPath", "User")
+    $currentUserPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    if ($currentUserPath -notlike "*$InstallPath*") {
+        [Environment]::SetEnvironmentVariable("Path", "$currentUserPath;$InstallPath", "User")
         Write-Host "Added $InstallPath to your user PATH." -ForegroundColor Green
-        Write-Host "Please restart your terminal for the change to take effect." -ForegroundColor Yellow
+        Write-Host "You will need to restart your terminal / VS Code for this to take effect." -ForegroundColor Yellow
     } else {
         Write-Host "$InstallPath is already in your PATH." -ForegroundColor Yellow
     }
 }
 
-if ($CreateAlias) {
-    $profilePath = $PROFILE.CurrentUserAllHosts
-    if (!(Test-Path $profilePath)) {
-        New-Item -ItemType File -Path $profilePath -Force | Out-Null
-    }
-
-    $aliasLine = 'function network-doctor { & "$env:USERPROFILE\Tools\NetworkDoctor.ps1" @args }'
-
-    if ((Get-Content $profilePath -Raw) -notmatch "function network-doctor") {
-        Add-Content -Path $profilePath -Value "`n$aliasLine"
-        Write-Host "Added network-doctor function to your PowerShell profile." -ForegroundColor Green
-        Write-Host "Restart PowerShell or run: . `$PROFILE" -ForegroundColor Yellow
-    } else {
-        Write-Host "network-doctor function already exists in your profile." -ForegroundColor Yellow
-    }
-    # Check execution policy
-    $currentPolicy = Get-ExecutionPolicy -Scope CurrentUser
-    if ($currentPolicy -eq "Restricted" -or $currentPolicy -eq "AllSigned") {
-        Write-Host ""
-        Write-Warning "Your CurrentUser execution policy is too restrictive ($currentPolicy)."
-        Write-Host "The alias will be added, but you won't be able to use it until you fix the policy." -ForegroundColor Yellow
-        $fix = Read-Host "Would you like to set execution policy to RemoteSigned for CurrentUser? (yes/no)"
-        if ($fix -eq "yes") {
+# --- 5. Execution Policy Check (helpful) ---
+$currentPolicy = Get-ExecutionPolicy -Scope CurrentUser
+if ($currentPolicy -eq 'Restricted') {
+    Write-Host ""
+    Write-Warning "Your CurrentUser execution policy is set to Restricted."
+    $fixPolicy = Read-Host "Would you like to set it to RemoteSigned so scripts can run? (yes/no)"
+    if ($fixPolicy -eq 'yes') {
+        try {
             Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
             Write-Host "Execution policy set to RemoteSigned for CurrentUser." -ForegroundColor Green
-            Write-Host "You may still need to restart PowerShell." -ForegroundColor Yellow
+        } catch {
+            Write-Host "Failed to change execution policy. You may need to run this as Administrator or do it manually." -ForegroundColor Red
         }
-    }
-
-    # Try to load the profile in current session if possible
-    try {
-        . $PROFILE.CurrentUserAllHosts -ErrorAction Stop
-        Write-Host "Profile reloaded successfully in current session." -ForegroundColor Green
-    } catch {
-        Write-Host "Could not reload profile in this session (common in elevated prompts)." -ForegroundColor Yellow
-        Write-Host "Restart PowerShell after installation for the alias to work." -ForegroundColor Yellow
     }
 }
 
-Write-Host "`nInstallation complete!" -ForegroundColor Green
-Write-Host "Run with: powershell -File `$env:USERPROFILE\Tools\NetworkDoctor.ps1" -ForegroundColor Cyan
-if ($CreateAlias) {
-    Write-Host "Or simply type: network-doctor" -ForegroundColor White
-    # Check execution policy
-    $currentPolicy = Get-ExecutionPolicy -Scope CurrentUser
-    if ($currentPolicy -eq "Restricted" -or $currentPolicy -eq "AllSigned") {
-        Write-Host ""
-        Write-Warning "Your CurrentUser execution policy is too restrictive ($currentPolicy)."
-        Write-Host "The alias will be added, but you won't be able to use it until you fix the policy." -ForegroundColor Yellow
-        $fix = Read-Host "Would you like to set execution policy to RemoteSigned for CurrentUser? (yes/no)"
-        if ($fix -eq "yes") {
-            Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-            Write-Host "Execution policy set to RemoteSigned for CurrentUser." -ForegroundColor Green
-            Write-Host "You may still need to restart PowerShell." -ForegroundColor Yellow
-        }
-    }
-
-    # Try to load the profile in current session if possible
-    try {
-        . $PROFILE.CurrentUserAllHosts -ErrorAction Stop
-        Write-Host "Profile reloaded successfully in current session." -ForegroundColor Green
-    } catch {
-        Write-Host "Could not reload profile in this session (common in elevated prompts)." -ForegroundColor Yellow
-        Write-Host "Restart PowerShell after installation for the alias to work." -ForegroundColor Yellow
-    }
-}
+Write-Host ""
+Write-Host "Installation complete!" -ForegroundColor Green
+Write-Host ""
+Write-Host "You can now run the tool by typing:" -ForegroundColor Cyan
+Write-Host "    network-doctor" -ForegroundColor White
+Write-Host ""
+Write-Host "Note: If you just added the folder to PATH, restart your terminal first." -ForegroundColor Yellow
