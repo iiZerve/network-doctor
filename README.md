@@ -195,3 +195,21 @@ Update-NetworkDoctor
 Get-NetworkDiagnostics
 ```
 
+
+
+
+## Running from Source (No Installation)
+
+If you just want to test the latest version without installing:
+
+```powershell
+cd network-doctor
+
+# Easiest (recommended)
+.\NetworkDoctor.ps1
+
+# Or load as module for development
+.\Load-FromSource.ps1
+Start-NetworkDoctor
+```
+

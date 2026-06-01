@@ -1,21 +1,40 @@
 <#
 .SYNOPSIS
-    Network Doctor Launcher
-.DESCRIPTION
-    Launches Network Doctor. Prefers the installed module if available.
+    Network Doctor - Main Launcher (Execution Policy Resilient)
 #>
 
-$module = Get-Module -ListAvailable NetworkDoctor -ErrorAction SilentlyContinue | Sort-Object Version -Descending | Select-Object -First 1
+[CmdletBinding()]
+param()
 
-if ($module) {
-    Import-Module NetworkDoctor -Force
-    Start-NetworkDoctor
-} else {
-    # Fallback to the script in this repo
-    $scriptPath = Join-Path $PSScriptRoot "src\AdvancedNetworkMonitor.ps1"
-    if (Test-Path $scriptPath) {
-        & $scriptPath @args
-    } else {
-        Write-Error "Could not find Network Doctor. Please run the installer or ensure the script exists."
+$ErrorActionPreference = 'Stop'
+
+$repoRoot = $PSScriptRoot
+$modulePath = Join-Path $repoRoot "src\NetworkDoctor"
+
+# Try to use the module if it's loadable
+$moduleManifest = Join-Path $modulePath "NetworkDoctor.psd1"
+
+if (Test-Path $moduleManifest) {
+    # Temporarily add the module folder to PSModulePath so Import-Module works from source
+    $env:PSModulePath = "$modulePath;$env:PSModulePath"
+
+    try {
+        Import-Module NetworkDoctor -Force -ErrorAction Stop
+        if (Get-Command Start-NetworkDoctor -ErrorAction SilentlyContinue) {
+            Start-NetworkDoctor
+            return
+        }
+    } catch {
+        Write-Warning "Could not load module from source. Falling back to script mode..."
     }
+}
+
+# Fallback: Run the original script with Bypass (most reliable)
+$scriptPath = Join-Path $repoRoot "src\AdvancedNetworkMonitor.ps1"
+
+if (Test-Path $scriptPath) {
+    Write-Host "Launching Network Doctor in script mode (bypassing execution policy)..." -ForegroundColor Yellow
+    powershell -NoProfile -ExecutionPolicy Bypass -File $scriptPath @args
+} else {
+    Write-Error "Could not find Network Doctor. The repository appears incomplete."
 }

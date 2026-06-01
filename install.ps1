@@ -82,13 +82,28 @@ Write-Host "    network-doctor" -ForegroundColor White
 Write-Host ""
 Write-Host "Tip: Restart your terminal / VS Code for PATH changes to apply." -ForegroundColor Yellow
 
-# --- Optional: Install as PowerShell module ---
-$installAsModule = Read-Host "`nWould you also like to install Network Doctor as a PowerShell module? (yes/no)"
+# --- Optional: Install as PowerShell module (recommended for advanced use) ---
+Write-Host ""
+$installAsModule = Read-Host "Would you also like to install Network Doctor as a proper PowerShell module? (recommended) (yes/no)"
 if ($installAsModule -eq 'yes') {
-    $modulePath = Join-Path $InstallPath "NetworkDoctor"
-    if (!(Test-Path $modulePath)) { New-Item -ItemType Directory -Path $modulePath -Force | Out-Null }
+    $userModulePath = if ($PSVersionTable.PSVersion.Major -ge 6) {
+        "$env:USERPROFILE\Documents\PowerShell\Modules\NetworkDoctor"
+    } else {
+        "$env:USERPROFILE\Documents\WindowsPowerShell\Modules\NetworkDoctor"
+    }
 
-    Copy-Item -Path (Join-Path $PSScriptRoot "src\NetworkDoctor\*") -Destination $modulePath -Recurse -Force
-    Write-Host "Module installed to: $modulePath" -ForegroundColor Green
-    Write-Host "You can now use: Import-Module NetworkDoctor" -ForegroundColor Cyan
+    if (!(Test-Path $userModulePath)) { 
+        New-Item -ItemType Directory -Path $userModulePath -Force | Out-Null 
+    }
+
+    $sourceModule = Join-Path $PSScriptRoot "src\NetworkDoctor"
+    if (Test-Path $sourceModule) {
+        Copy-Item -Path "$sourceModule\*" -Destination $userModulePath -Recurse -Force
+        Write-Host "Module installed to: $userModulePath" -ForegroundColor Green
+        Write-Host "You can now use: Import-Module NetworkDoctor" -ForegroundColor Cyan
+        Write-Host "Then run: Start-NetworkDoctor" -ForegroundColor White
+    } else {
+        Write-Host "Module source not found. Skipping module installation." -ForegroundColor Yellow
+    }
 }
+
