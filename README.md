@@ -39,27 +39,26 @@ This tool was built to:
 
 ## Installation (Recommended)
 
-The fastest way to get started:
+The easiest and most reliable way:
 
-```powershell
+```cmd
 git clone https://github.com/iiZerve/network-doctor.git
 cd network-doctor
 
-powershell -ExecutionPolicy Bypass -File .\install.ps1
+install.cmd
 ```
 
-This will:
-- Install the tool to `C:\Users\YourName\Tools`
-- Create a `network-doctor` command
-- Add the folder to your PATH
+This uses a `.cmd` wrapper that bypasses PowerShell execution policy restrictions (very common when running elevated or in locked-down environments).
 
-After running the installer, **restart your terminal**, then just type:
+After the installer finishes:
+- Restart your terminal
+- Type `network-doctor` to launch
+
+### Alternative (if .cmd doesn't work)
 
 ```powershell
-network-doctor
+powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
-
-That's it.
 
 ### Recommended Method (Simplest)
 
@@ -226,4 +225,5 @@ If you see "running scripts is disabled on this system" when trying to run `.ps1
 ```
 
 This bypasses the PowerShell execution policy restriction.
+
 
