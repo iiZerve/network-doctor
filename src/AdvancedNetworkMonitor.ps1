@@ -294,19 +294,20 @@ while ($true) {
 }
 
 
+
+
 function Show-LossGraph {
     param([array]$History, [int]$Width = 50)
     if ($History.Count -eq 0) { return }
     
     Write-Host "`nPacket Loss History (last $($History.Count) samples, 30s each):" -ForegroundColor Cyan
     
-    $max = 100
     $barWidth = 40
     
     foreach ($entry in $History) {
         $loss = [math]::Min(100, [math]::Max(0, $entry.Loss))
         $filled = [math]::Floor(($loss / 100) * $barWidth)
-        $bar = ('█' * $filled) + ('░' * ($barWidth - $filled))
+        $bar = ('#' * $filled) + ('.' * ($barWidth - $filled))
         $time = $entry.Time.ToString('HH:mm:ss')
         Write-Host ("  {0} | {1} {2,5}%" -f $time, $bar, $loss)
     }
@@ -314,19 +315,20 @@ function Show-LossGraph {
 
 # ==================== MAIN MENU ====================
 
+
+
 function Show-LossGraph {
     param([array]$History, [int]$Width = 50)
     if ($History.Count -eq 0) { return }
     
     Write-Host "`nPacket Loss History (last $($History.Count) samples, 30s each):" -ForegroundColor Cyan
     
-    $max = 100
     $barWidth = 40
     
     foreach ($entry in $History) {
         $loss = [math]::Min(100, [math]::Max(0, $entry.Loss))
         $filled = [math]::Floor(($loss / 100) * $barWidth)
-        $bar = ('█' * $filled) + ('░' * ($barWidth - $filled))
+        $bar = ('#' * $filled) + ('.' * ($barWidth - $filled))
         $time = $entry.Time.ToString('HH:mm:ss')
         Write-Host ("  {0} | {1} {2,5}%" -f $time, $bar, $loss)
     }
@@ -393,6 +395,8 @@ while ($true) {
         }
     }
 }
+
+
 
 
 
