@@ -233,6 +233,7 @@ while ($true) {
         "3" { Apply-Profile -ProfileType "Stability" }
         "4" { Apply-Profile -ProfileType "Speed" }
         "5" { Generate-RogersReport }
+        "8" { Invoke-SpeedTest | Format-List }
         "6" { 
             Get-ChildItem $Config.LogDir -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select -First 8 | Format-Table
             Read-Host "`nPress Enter"
@@ -242,3 +243,4 @@ while ($true) {
         default { Write-Host "Invalid option" -ForegroundColor Red; Start-Sleep -Milliseconds 600 }
     }
 }
+
