@@ -242,3 +242,4 @@ If the tool is flashing errors or the installed files got messed up, use:
 ```
 
 This will aggressively delete any old/broken `NetworkDoctor.ps1` and shims before installing fresh copies.
+

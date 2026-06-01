@@ -105,6 +105,26 @@ Write-Host "    .\NetworkDoctor.cmd   (from the repo folder)" -ForegroundColor W
 Write-Host ""
 Write-Host "Tip: Restart your terminal / VS Code for PATH changes to apply." -ForegroundColor Yellow
 
+# --- Create PowerShell function alias that calls the robust .cmd (avoids .ps1 execution policy issues) ---
+$createFunction = Read-Host "`nCreate a network-doctor function in your profile that calls the reliable .cmd? (yes/no)"
+if ($createFunction -eq "yes") {
+    $profilePath = $PROFILE.CurrentUserAllHosts
+    if (!(Test-Path $profilePath)) {
+        New-Item -ItemType File -Path $profilePath -Force | Out-Null
+    }
+
+    # Calls the .cmd shim (which always forces Bypass)
+    $functionLine = "function network-doctor { & \"$env:USERPROFILE\Tools\network-doctor.cmd\" @args }"
+
+    if ((Get-Content $profilePath -Raw -ErrorAction SilentlyContinue) -notmatch "function network-doctor") {
+        Add-Content -Path $profilePath -Value "`n$functionLine" -Encoding UTF8
+        Write-Host "Added network-doctor function (uses .cmd) to your profile." -ForegroundColor Green
+        Write-Host "Restart PowerShell to activate it." -ForegroundColor Yellow
+    } else {
+        Write-Host "network-doctor function already exists in profile." -ForegroundColor Yellow
+    }
+}
+
 # --- Optional: Install as PowerShell module (recommended for advanced use) ---
 Write-Host ""
 $installAsModule = Read-Host "Would you also like to install Network Doctor as a proper PowerShell module? (recommended) (yes/no)"
