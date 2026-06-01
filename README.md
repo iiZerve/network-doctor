@@ -120,14 +120,18 @@ powershell -ExecutionPolicy Bypass -File ".\src\AdvancedNetworkMonitor.ps1"
 
 ### Quick Start
 
-```powershell
-# Clone the repo
-git clone https://github.com/YOUR_USERNAME/network-doctor.git
+**Most reliable way (recommended):**
+
+```cmd
+git clone https://github.com/iiZerve/network-doctor.git
 cd network-doctor
 
-# Run the tool
-powershell -ExecutionPolicy Bypass -File ".\src\AdvancedNetworkMonitor.ps1"
+NetworkDoctor.cmd
 ```
+
+This works even in elevated PowerShell or environments with strict execution policies.
+
+After installation (see below), you can also just type `network-doctor` from anywhere.
 
 ## Usage
 
@@ -197,24 +201,20 @@ Get-NetworkDiagnostics
 
 
 
-## Quick Start (Simplest Way)
+## Quick Start
 
-After cloning:
+**Most reliable way (recommended):**
 
-```powershell
+```cmd
+git clone https://github.com/iiZerve/network-doctor.git
 cd network-doctor
 
-# Recommended on most systems (works even with restricted execution policy)
-.\NetworkDoctor.cmd
+NetworkDoctor.cmd
 ```
 
-Or after installing via the installer, just type:
+This works even in elevated PowerShell or environments with strict execution policies.
 
-```powershell
-network-doctor
-```
-
-The `.cmd` launcher is the most reliable way when PowerShell execution policies are restrictive (very common in corporate or elevated sessions).
+After installation (see below), you can also just type `network-doctor` from anywhere.
 
 ### Important: Execution Policy Issues
 
@@ -225,5 +225,6 @@ If you see "running scripts is disabled on this system" when trying to run `.ps1
 ```
 
 This bypasses the PowerShell execution policy restriction.
+
 
 

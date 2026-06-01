@@ -39,13 +39,18 @@ Copy-Item $source $target -Force
 Write-Host "Installed script → $target" -ForegroundColor Green
 
 # Create the command shim (this is what lets you type 'network-doctor')
-$shim = Join-Path $InstallPath "network-doctor.cmd"
-$shimContent = @"
+    $shim = Join-Path $InstallPath "network-doctor.cmd"
+    $shimContent = @"
 @echo off
-powershell -NoProfile -ExecutionPolicy Bypass -File "%USERPROFILE%\Tools\NetworkDoctor.ps1" %*
+setlocal
+set "SCRIPT=%USERPROFILE%\Tools\NetworkDoctor.ps1"
+
+REM Always launch with Bypass to handle restricted execution policies
+powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT%" %*
 "@
-$shimContent | Out-File -FilePath $shim -Encoding ASCII -Force
-Write-Host "Created command  → network-doctor" -ForegroundColor Green
+
+    $shimContent | Out-File -FilePath $shim -Encoding ASCII -Force
+    Write-Host "Created robust command: network-doctor (bypasses execution policy)" -ForegroundColor Green
 
 # Automatically add to PATH if not already there (with clear feedback)
 $currentPath = [Environment]::GetEnvironmentVariable("Path", "User")
