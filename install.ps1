@@ -114,7 +114,7 @@ if ($createFunction -eq "yes") {
     }
 
     # Calls the .cmd shim (which always forces Bypass)
-    $functionLine = "function network-doctor { & \"$env:USERPROFILE\Tools\network-doctor.cmd\" @args }"
+    $functionLine = 'function network-doctor { & "$env:USERPROFILE\Tools\network-doctor.cmd" @args }'
 
     if ((Get-Content $profilePath -Raw -ErrorAction SilentlyContinue) -notmatch "function network-doctor") {
         Add-Content -Path $profilePath -Value "`n$functionLine" -Encoding UTF8
