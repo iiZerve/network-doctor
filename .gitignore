@@ -1,0 +1,24 @@
+# PowerShell
+*.psd1
+*.psm1
+
+# Logs from the tool
+NetworkLogs/
+*.log
+*.csv
+*.jsonl
+
+# IDE / Editor
+.vscode/
+.idea/
+*.suo
+*.user
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Temporary files
+*.tmp
+*.temp
