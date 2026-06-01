@@ -292,28 +292,62 @@ function Start-Monitoring {
 }
 
 # ==================== MAIN MENU ====================
-while ($true) {
-    Write-Host "`n=== GROK NETWORK DOCTOR v2 ===" -ForegroundColor Cyan
-    Write-Host "1. Start Monitoring + Logging"
-    Write-Host "2. Run Diagnostics + Recommendations"
-    Write-Host "3. Apply Best Stability Profile"
-    Write-Host "4. Apply Best Speed Profile"
-    Write-Host "5. Generate Rogers Support Report"
-    Write-Host "6. Exit"
+# ==================== MAIN MENU ====================
+function Show-MainMenu {
+    Clear-Host
+    Write-Host "╔════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║              NETWORK DOCTOR v$script:Version                    ║" -ForegroundColor Cyan
+    Write-Host "╚════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "  [1]  Start Monitoring + Logging" -ForegroundColor White
+    Write-Host "  [2]  Run Diagnostics + Recommendations" -ForegroundColor White
+    Write-Host "  [3]  Apply Best Stability Profile     " -ForegroundColor Green
+    Write-Host "  [4]  Apply Best Speed Profile         " -ForegroundColor Yellow
+    Write-Host "  [5]  Generate Rogers Support Report   " -ForegroundColor Magenta
+    Write-Host "  [6]  Show Recent Logs                 " -ForegroundColor DarkCyan
+    Write-Host "  [7]  Help / About                     " -ForegroundColor DarkGray
+    Write-Host "  [0]  Exit                             " -ForegroundColor Red
+    Write-Host ""
+}
 
-    $choice = Read-Host "`nSelect option"
+while ($true) {
+    Show-MainMenu
+    $choice = Read-Host "Select option (0-7)"
 
     switch ($choice) {
         "1" { Start-Monitoring }
         "2" { 
             $recs = Get-Recommendations
             $recs | ForEach-Object { Write-Host "• $_" -ForegroundColor Yellow }
+            Read-Host "`nPress Enter to return to menu"
         }
         "3" { Apply-Profile -ProfileType "Stability" }
         "4" { Apply-Profile -ProfileType "Speed" }
         "5" { Generate-RogersReport }
-        "6" { exit }
-        default { Write-Host "Invalid" }
+        "6" { 
+            Write-Host "`nRecent log files:" -ForegroundColor Cyan
+            Get-ChildItem $Config.LogDir -ErrorAction SilentlyContinue | 
+                Sort-Object LastWriteTime -Descending | Select-Object -First 8 |
+                Format-Table Name, LastWriteTime, Length -AutoSize
+            Read-Host "`nPress Enter to return to menu"
+        }
+        "7" {
+            Write-Host "`n=== Network Doctor Help ===" -ForegroundColor Cyan
+            Write-Host "This tool helps diagnose unstable cable connections (especially"
+            Write-Host "Rogers/Shaw Hitron CGM4331SHW + Intel AX201 combos)."
+            Write-Host ""
+            Write-Host "While monitoring, type things like:" -ForegroundColor Yellow
+            Write-Host "  light solid red"
+            Write-Host "  light blinking green"
+            Write-Host "  gateway rebooted"
+            Write-Host ""
+            Write-Host "These notes are saved with timestamps and included in reports."
+            Read-Host "`nPress Enter to return to menu"
+        }
+        "0" { exit }
+        default { 
+            Write-Host "Invalid option. Please choose 0-7." -ForegroundColor Red
+            Start-Sleep -Milliseconds 700
+        }
     }
 }
-
