@@ -47,7 +47,7 @@ if ($CreateAlias) {
         New-Item -ItemType File -Path $profilePath -Force | Out-Null
     }
 
-    $aliasLine = "function network-doctor { & \"$env:USERPROFILE\Tools\NetworkDoctor.ps1\" @args }"
+    $aliasLine = 'function network-doctor { & "$env:USERPROFILE\Tools\NetworkDoctor.ps1" @args }'
 
     if ((Get-Content $profilePath -Raw) -notmatch "function network-doctor") {
         Add-Content -Path $profilePath -Value "`n$aliasLine"
