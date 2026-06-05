@@ -1,0 +1,31 @@
+{
+  "name": "network-doctor",
+  "version": "1.0.0",
+  "description": "Network Doctor - Advanced local network diagnostics for Android",
+  "main": "index.js",
+  "scripts": {
+    "cap": "npx cap",
+    "sync": "npx cap sync",
+    "prepare:web": "node -e \"require('fs').copyFileSync('index.html','www/index.html')\"",
+    "build:android:debug": "npm run prepare:web && npx cap sync android && cd android && .\\gradlew.bat assembleDebug",
+    "build:android:release": "npm run prepare:web && npx cap sync android && cd android && .\\gradlew.bat bundleRelease",
+    "open:android": "npx cap open android",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "network",
+    "diagnostics",
+    "monitoring",
+    "capacitor",
+    "android"
+  ],
+  "author": "iiZerve",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/core": "^6.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.0.0"
+  }
+}
