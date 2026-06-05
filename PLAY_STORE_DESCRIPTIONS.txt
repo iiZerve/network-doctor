@@ -7,7 +7,9 @@ Tired of your internet dropping, lagging, or just feeling off — and having no 
 
 Network Doctor puts real diagnostic power in your pocket. It doesn’t just run another generic speed test. It watches your connection over time, tracks true packet loss, and gives you clear, honest insights into what’s really happening.
 
-See live latency, download, upload, and actual packet loss in beautiful high-resolution charts. Turn on intelligent background monitoring with three power modes (Light, Balanced, or Aggressive) plus automatic smart boosting when problems appear — all while keeping battery usage surprisingly low.
+See live latency and actual packet loss in beautiful high-resolution charts, while download/upload trend visuals stay clearly labeled as illustrative.
+
+Turn on intelligent background monitoring with three power modes (Light, Balanced, or Aggressive) plus automatic smart boosting when problems appear — all while keeping battery usage surprisingly low.
 
 When you need answers right now, open the powerful real diagnostic toolkit:
 • Accurate Ping using real-world fetch timing
