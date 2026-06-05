@@ -1,0 +1,25 @@
+SHORT DESCRIPTION (80 characters max):
+Real-time monitoring & tools that reveal what's actually wrong with your internet.
+
+FULL DESCRIPTION:
+
+Tired of your internet dropping, lagging, or just feeling off — and having no idea why?
+
+Network Doctor puts real diagnostic power in your pocket. It doesn’t just run another generic speed test. It watches your connection over time, tracks true packet loss, and gives you clear, honest insights into what’s really happening.
+
+See live latency, download, upload, and actual packet loss in beautiful high-resolution charts. Turn on intelligent background monitoring with three power modes (Light, Balanced, or Aggressive) plus automatic smart boosting when problems appear — all while keeping battery usage surprisingly low.
+
+When you need answers right now, open the powerful real diagnostic toolkit:
+• Accurate Ping using real-world fetch timing
+• True DNS lookups via Cloudflare DoH
+• Local IP + public IP detection
+• Port connectivity testing
+• Detailed packet loss history with timestamps
+
+Whether you're battling Wi-Fi drops, ISP outages, bufferbloat, or just want to understand your connection better, Network Doctor delivers the data that actually matters — 100% locally on your device.
+
+No accounts. No data harvesting. No nonsense.
+
+Stop guessing. Start knowing.
+
+Download Network Doctor today and finally take control of your connection.

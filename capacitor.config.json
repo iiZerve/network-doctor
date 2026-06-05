@@ -1,0 +1,17 @@
+{
+  "appId": "com.iiZerve.networkdoctor",
+  "appName": "Network Doctor",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "launchAutoHide": true,
+      "backgroundColor": "#0f172a",
+      "androidSplashResourceName": "splash"
+    }
+  }
+}
