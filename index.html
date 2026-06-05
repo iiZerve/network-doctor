@@ -4,451 +4,542 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Network Doctor</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   <style>
-    body { font-family: system-ui, -apple-system, sans-serif; }
+    :root {
+      --bg: #09090b;
+      --panel: #18181b;
+      --panel-2: #0f172a;
+      --border: #27272a;
+      --text: #e4e4e7;
+      --muted: #a1a1aa;
+      --accent: #22c55e;
+      --cyan: #06b6d4;
+      --purple: #a855f7;
+      --red: #ef4444;
+      --amber: #f59e0b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: radial-gradient(circle at top, #111827 0%, var(--bg) 50%);
+      color: var(--text);
+    }
+    .app {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      gap: 18px;
+    }
+    .topbar, .panel, .metric, button, textarea, pre, input, select {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+    }
+    .topbar {
+      background: rgba(24, 24, 27, 0.96);
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+    .logo {
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #2563eb, #0ea5e9);
+      font-weight: 800;
+      color: white;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.06) inset;
+    }
+    h1 { margin: 0; font-size: 28px; }
+    .subtitle { color: var(--muted); margin-top: 4px; font-size: 14px; }
+    .badge {
+      font-size: 12px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      color: #67e8f9;
+      background: rgba(8, 47, 73, 0.6);
+      border: 1px solid rgba(34, 211, 238, 0.25);
+      white-space: nowrap;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .metric {
+      background: rgba(24, 24, 27, 0.95);
+      padding: 16px;
+      min-height: 108px;
+    }
+    .metric .label {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+    }
+    .metric .value {
+      margin-top: 10px;
+      font-size: 28px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .metric .hint { color: var(--muted); font-size: 12px; margin-top: 4px; }
+    .panel {
+      background: rgba(24, 24, 27, 0.95);
+      padding: 18px;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    button {
+      background: #27272a;
+      color: var(--text);
+      padding: 12px 16px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover { background: #3f3f46; }
+    button.primary {
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      border-color: rgba(14, 165, 233, 0.6);
+      font-weight: 700;
+    }
+    button.primary:hover { filter: brightness(1.05); }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    textarea, pre {
+      width: 100%;
+      background: #09090b;
+      color: var(--text);
+      padding: 14px;
+      font: inherit;
+    }
+    textarea { min-height: 150px; resize: vertical; }
+    pre {
+      white-space: pre-wrap;
+      margin: 0;
+      min-height: 96px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .muted { color: var(--muted); }
+    .section-title {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+    .status {
+      font-size: 13px;
+      color: #67e8f9;
+    }
+    .status.error { color: #fca5a5; }
+    .status.ok { color: #86efac; }
+    .history {
+      display: grid;
+      gap: 8px;
+    }
+    .history-item {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #111827;
+      font-size: 13px;
+      color: var(--text);
+    }
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .diag-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 980px) {
+      .metrics, .grid-3, .grid-2, .diag-buttons { grid-template-columns: 1fr; }
+      h1 { font-size: 24px; }
+    }
   </style>
 </head>
-<body class="bg-zinc-950 text-zinc-200">
-  <div class="max-w-7xl mx-auto p-6 space-y-8">
-    <header class="flex items-center justify-between gap-4">
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 bg-blue-600 rounded-3xl flex items-center justify-center">
-          <i class="fa-solid fa-network-wired text-3xl"></i>
-        </div>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">ND</div>
         <div>
-          <h1 class="text-4xl font-semibold">Network Doctor</h1>
-          <p class="text-zinc-500 text-sm">Advanced local network diagnostics</p>
+          <h1>Network Doctor</h1>
+          <div class="subtitle">Cloudflare Speedtest for accurate download/upload, plus manual network diagnostics</div>
         </div>
       </div>
-      <div class="text-xs px-3 py-1 rounded-full border border-cyan-500/30 text-cyan-400 bg-zinc-900">Android app • local-only diagnostics</div>
+      <div class="badge">Cloudflare Speedtest • on-demand</div>
     </header>
 
-    <!-- Metrics -->
-    <section class="grid grid-cols-2 md:grid-cols-5 gap-4">
-      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5">
-        <div class="text-xs text-zinc-400">STATUS</div>
-        <div id="status" class="text-3xl font-semibold mt-2 text-emerald-400">Online</div>
+    <section class="metrics">
+      <div class="metric">
+        <div class="label">STATUS</div>
+        <div class="value" id="status">Idle</div>
+        <div class="hint" id="status-hint">Ready to start a speed test</div>
       </div>
-      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5">
-        <div class="text-xs text-zinc-400">LATENCY</div>
-        <div id="latency" class="text-3xl font-semibold mt-2 font-mono">-- ms</div>
+      <div class="metric">
+        <div class="label">LATENCY</div>
+        <div class="value" id="latency">-- ms</div>
+        <div class="hint">Cloudflare unloaded latency</div>
       </div>
-      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5">
-        <div class="text-xs text-zinc-400">DOWNLOAD</div>
-        <div id="download" class="text-3xl font-semibold mt-2 font-mono">-- Mbps</div>
+      <div class="metric">
+        <div class="label">DOWNLOAD</div>
+        <div class="value" id="download">-- Mbps</div>
+        <div class="hint">Cloudflare edge throughput</div>
       </div>
-      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5">
-        <div class="text-xs text-zinc-400">UPLOAD</div>
-        <div id="upload" class="text-3xl font-semibold mt-2 font-mono">-- Mbps</div>
+      <div class="metric">
+        <div class="label">UPLOAD</div>
+        <div class="value" id="upload">-- Mbps</div>
+        <div class="hint">Cloudflare edge throughput</div>
       </div>
-      <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5">
-        <div class="text-xs text-zinc-400">LOSS</div>
-        <div id="loss" class="text-3xl font-semibold mt-2 font-mono">--%</div>
+      <div class="metric">
+        <div class="label">LAST RUN</div>
+        <div class="value" id="last-run">--</div>
+        <div class="hint">No real-time background updates</div>
       </div>
     </section>
 
-    <!-- Performance charts -->
-    <section class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
-      <div class="flex items-center justify-between gap-4 mb-4">
+    <section class="panel">
+      <div class="row" style="margin-bottom: 12px;">
         <div>
-          <div class="font-semibold text-lg">Performance Over Time</div>
-          <div class="text-xs text-zinc-500">Latency and LOSS are real • Download/Upload use real best-effort bandwidth samples</div>
+          <h2 class="section-title">Speed Test</h2>
+          <div class="small">Uses Cloudflare’s speedtest engine directly. Results are measured only when you press the button.</div>
         </div>
-        <div class="text-xs px-3 py-1 bg-zinc-800 rounded-full border border-cyan-500/30 text-cyan-400">LIVE</div>
+        <div class="controls">
+          <button id="start-speed-test-btn" class="primary" type="button">Start Speed Test</button>
+          <button id="clear-results-btn" type="button">Clear Results</button>
+        </div>
       </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="grid-2">
+        <pre id="speed-test-summary">No speed test run yet.</pre>
         <div>
-          <div class="flex justify-between text-sm mb-1">
-            <span class="text-emerald-400 font-medium">Download</span>
-            <span id="dl-val" class="font-mono text-xs text-zinc-400">-- Mbps</span>
-          </div>
-          <div class="relative h-36 bg-zinc-950 rounded-2xl overflow-hidden border border-zinc-800">
-            <canvas id="dlChart" class="w-full h-full"></canvas>
-          </div>
-        </div>
-
-        <div>
-          <div class="flex justify-between text-sm mb-1">
-            <span class="text-fuchsia-400 font-medium">Upload</span>
-            <span id="ul-val" class="font-mono text-xs text-zinc-400">-- Mbps</span>
-          </div>
-          <div class="relative h-36 bg-zinc-950 rounded-2xl overflow-hidden border border-zinc-800">
-            <canvas id="ulChart" class="w-full h-full"></canvas>
-          </div>
-        </div>
-
-        <div>
-          <div class="flex justify-between text-sm mb-1">
-            <span class="text-cyan-400 font-medium">Latency</span>
-            <span id="lat-val" class="font-mono text-xs text-zinc-400">-- ms</span>
-          </div>
-          <div class="relative h-36 bg-zinc-950 rounded-2xl overflow-hidden border border-zinc-800">
-            <canvas id="latChart" class="w-full h-full"></canvas>
+          <div class="small" style="margin-bottom: 8px;">Recent speed test history</div>
+          <div class="history" id="history-list">
+            <div class="history-item muted">No runs yet.</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Monitoring -->
-    <section class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5">
-      <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+    <section class="panel">
+      <div class="row" style="margin-bottom: 12px;">
         <div>
-          <div class="font-semibold">Real-time Monitoring</div>
-          <div id="monitoring-status" class="text-xs text-emerald-400">Passive • Light • Intelligent</div>
+          <h2 class="section-title">Diagnostic Tools</h2>
+          <div class="small">Manual checks only. No continuous real-time throughput reporting.</div>
         </div>
-        <label class="flex items-center gap-2 text-sm cursor-pointer">
-          <input type="checkbox" id="monitoring-enabled" checked onchange="toggleMonitoring(this.checked)" class="accent-emerald-500">
-          <span>Background monitoring</span>
-        </label>
+        <button id="copy-results-btn" type="button">Copy Results</button>
       </div>
-
-      <div class="flex flex-wrap items-center gap-3">
-        <label class="flex items-center gap-2 text-sm">
-          <span class="text-zinc-400">Intensity:</span>
-          <select id="monitoring-intensity" onchange="setIntensity(this.value)" class="bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-1 text-sm focus:outline-none">
-            <option value="light" selected>Light (very battery friendly)</option>
-            <option value="balanced">Balanced</option>
-            <option value="aggressive">Aggressive</option>
-          </select>
-        </label>
-
-        <label class="flex items-center gap-2 text-sm cursor-pointer">
-          <input type="checkbox" id="smart-boost" checked onchange="monitoring.smartBoost = this.checked; updateMonitoringUI(); saveState()" class="accent-emerald-500">
-          <span>Intelligent Active Background Monitoring</span>
-        </label>
-
-        <button type="button" onclick="manualBoostNow()" class="text-xs px-3 py-1 bg-cyan-600/20 hover:bg-cyan-600/30 rounded-xl border border-cyan-500/40 text-cyan-300">
-          Boost for 10 minutes
-        </button>
-
-        <div class="text-xs text-zinc-500 ml-auto">Default is extremely lightweight in passive mode</div>
+      <div class="diag-buttons">
+        <button id="ping-btn" type="button">Ping</button>
+        <button id="nslookup-btn" type="button">NSLookup</button>
+        <button id="ipconfig-btn" type="button">IP Config + Local IP</button>
       </div>
+      <textarea id="results-box" placeholder="Results will appear here..."></textarea>
     </section>
 
-    <!-- Diagnostic tools -->
-    <section class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
-      <div class="flex justify-between items-center mb-4">
-        <div class="font-semibold text-lg">Diagnostic Tools</div>
-        <button onclick="copyResults()" class="text-xs px-3 py-1 bg-zinc-800 hover:bg-zinc-700 rounded-xl flex items-center gap-1 border border-zinc-600">
-          <i class="fa-solid fa-copy"></i><span>Copy</span>
-        </button>
+    <section class="panel">
+      <div class="row" style="margin-bottom: 12px;">
+        <div>
+          <h2 class="section-title">Activity Log</h2>
+          <div class="small">Logs only appear when you run a test or a diagnostic.</div>
+        </div>
+        <button id="export-report-btn" type="button">Export Full Report</button>
       </div>
-      <div class="grid grid-cols-2 md:grid-cols-6 gap-2 text-sm mb-4">
-        <button onclick="runPing()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-left">Ping</button>
-        <button onclick="runNSLookup()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-left">NSLookup</button>
-        <button onclick="runIPConfig()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-left">IP Config + Local IP</button>
-        <button onclick="runPortCheck()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-left">Port Connectivity Check</button>
-        <button onclick="showPacketDetails()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-left">Recent Packet Loss Details</button>
-        <button onclick="runBandwidthTest()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-left">Run Bandwidth Test</button>
-      </div>
-      <textarea id="results-box" rows="8" class="w-full bg-zinc-950 border border-zinc-700 rounded-2xl p-3 font-mono text-sm" placeholder="Results will appear here..."></textarea>
-    </section>
-
-    <!-- Quick actions -->
-    <section class="grid grid-cols-1 md:grid-cols-2 gap-3">
-      <button onclick="exportReport()" class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-3xl p-5 text-left transition-colors">
-        <i class="fa-solid fa-file-export text-purple-400 text-xl mb-3"></i>
-        <div class="font-medium">Export Full Report</div>
-      </button>
-      <button onclick="clearAll()" class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-3xl p-5 text-left transition-colors">
-        <div class="font-medium">Clear All Data</div>
-      </button>
-    </section>
-
-    <section>
-      <div class="font-semibold mb-2">Activity Log</div>
-      <div id="log" class="bg-zinc-900 border border-zinc-800 rounded-3xl p-4 h-72 overflow-auto font-mono text-sm"></div>
+      <div id="log" style="display:grid; gap:8px;"></div>
     </section>
   </div>
 
   <script>
-    const TARGETS = [
-      { label: 'Google 204', url: 'https://www.google.com/generate_204' },
-      { label: 'Cloudflare trace', url: 'https://www.cloudflare.com/cdn-cgi/trace' },
-      { label: 'GStatic 204', url: 'https://www.gstatic.com/generate_204' },
-      { label: 'IPify', url: 'https://api.ipify.org?format=json' }
+    const CF_MODULE_URLS = [
+      'https://cdn.jsdelivr.net/npm/@cloudflare/speedtest/+esm',
+      'https://esm.sh/@cloudflare/speedtest'
     ];
 
-    const INTERVALS = {
-      light: { passive: 600000, active: 45000, boosted: 30000 },
-      balanced: { passive: 120000, active: 15000, boosted: 12000 },
-      aggressive: { passive: 45000, active: 8000, boosted: 6000 }
+    const CF_MEASUREMENTS = [
+      { type: 'latency', numPackets: 1 },
+      { type: 'download', bytes: 1e5, count: 1, bypassMinDuration: true },
+      { type: 'latency', numPackets: 20 },
+      { type: 'download', bytes: 1e5, count: 9 },
+      { type: 'download', bytes: 1e6, count: 8 },
+      { type: 'upload', bytes: 1e5, count: 8 },
+      { type: 'upload', bytes: 1e6, count: 6 },
+      { type: 'download', bytes: 1e7, count: 6 },
+      { type: 'upload', bytes: 1e7, count: 4 },
+      { type: 'download', bytes: 2.5e7, count: 4 },
+      { type: 'upload', bytes: 2.5e7, count: 4 },
+      { type: 'download', bytes: 1e8, count: 3 },
+      { type: 'upload', bytes: 5e7, count: 3 }
+    ];
+
+    const state = {
+      speedTestRunning: false,
+      speedTestCtor: null,
+      history: []
     };
 
-    const monitoring = {
-      enabled: true,
-      intensity: 'light',
-      smartBoost: true,
-      mode: 'passive',
-      lastBoostUntil: 0,
-      intervalId: null
-    };
+    const el = id => document.getElementById(id);
 
-    let lChart, dChart, uChart;
-    let lData = [], dData = [], uData = [];
-    let recentChecks = [];
-    let saveTimer = null;
-    let relaxTimer = null;
-
-    function labels20() {
-      return Array.from({ length: 20 }, (_, i) => i === 19 ? 'Now' : '');
+    function setText(id, text) {
+      const node = el(id);
+      if (node) node.textContent = text;
     }
 
-    function createChart(id, color, label) {
-      const el = document.getElementById(id);
-      return new Chart(el, {
-        type: 'line',
-        data: { labels: labels20(), datasets: [{ data: [], borderColor: color, borderWidth: 2, tension: 0.18, pointRadius: 0, fill: false }] },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: { duration: 180 },
-          plugins: { legend: { display: false }, tooltip: { backgroundColor: '#18181b', borderColor: color, borderWidth: 1 } },
-          scales: {
-            x: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { color: '#a1a1aa', font: { size: 10 } }, title: { display: true, text: 'Time', color: '#a1a1aa', font: { size: 10 } } },
-            y: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { color: '#a1a1aa', font: { size: 9 } }, title: { display: true, text: label, color: '#a1a1aa', font: { size: 10 } }, grace: '10%' }
-          }
-        }
+    function setStatus(text, kind = '') {
+      setText('status', text);
+      const hint = el('status-hint');
+      if (hint) hint.textContent = text === 'Running' ? 'Testing Cloudflare edge network...' : 'Ready to start a speed test';
+      const status = el('status');
+      if (status) status.className = `value ${kind}`;
+    }
+
+    function timeStamp() {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    function logLine(message) {
+      const log = el('log');
+      if (!log) return;
+      const row = document.createElement('div');
+      row.className = 'history-item';
+      row.textContent = `[${timeStamp()}] ${message}`;
+      log.prepend(row);
+    }
+
+    function appendResult(text) {
+      const box = el('results-box');
+      if (!box) return;
+      box.value = box.value ? `${box.value}\n${text}` : text;
+    }
+
+    function clearResults() {
+      const box = el('results-box');
+      if (box) box.value = '';
+      const summary = el('speed-test-summary');
+      if (summary) summary.textContent = 'No speed test run yet.';
+    }
+
+    function updateHistory(entry) {
+      state.history.unshift(entry);
+      state.history = state.history.slice(0, 5);
+      const list = el('history-list');
+      if (!list) return;
+      list.innerHTML = '';
+      if (!state.history.length) {
+        const empty = document.createElement('div');
+        empty.className = 'history-item muted';
+        empty.textContent = 'No runs yet.';
+        list.appendChild(empty);
+        return;
+      }
+      state.history.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'history-item';
+        row.textContent = `${item.when} • ${item.download} down • ${item.upload} up • ${item.latency} ms latency`;
+        list.appendChild(row);
       });
     }
 
-    function renderSpeedCharts() {
-      if (!dChart || !uChart) return;
-      dChart.data.labels = labels20();
-      uChart.data.labels = labels20();
-      dChart.data.datasets[0].data = dData.slice(-20);
-      uChart.data.datasets[0].data = uData.slice(-20);
-      dChart.update('none');
-      uChart.update('none');
-      if (dData.length) document.getElementById('dl-val').textContent = dData[dData.length - 1].toFixed(1) + ' Mbps';
-      if (uData.length) document.getElementById('ul-val').textContent = uData[uData.length - 1].toFixed(1) + ' Mbps';
-    }
-
-    function renderLatencyChart() {
-      if (!lChart) return;
-      lChart.data.labels = labels20();
-      lChart.data.datasets[0].data = lData.slice(-20);
-      lChart.update('none');
-      if (lData.length) document.getElementById('lat-val').textContent = lData[lData.length - 1].toFixed(1) + ' ms';
-    }
-
-    function pushSpeedSample() {
-      const dl = 55 + Math.random() * 170;
-      const ul = 7 + Math.random() * 42;
-      dData.push(dl); uData.push(ul);
-      if (dData.length > 20) dData.shift();
-      if (uData.length > 20) uData.shift();
-      document.getElementById('download').textContent = dl.toFixed(1) + ' Mbps';
-      document.getElementById('upload').textContent = ul.toFixed(1) + ' Mbps';
-      renderSpeedCharts();
-    }
-
-    function updateLossCard() {
-      const el = document.getElementById('loss');
-      if (!el) return;
-      const windowed = recentChecks.slice(-28);
-      if (windowed.length < 4) { el.textContent = '--%'; return; }
-      const lost = windowed.filter(r => !r.ok).length;
-      el.textContent = ((lost / windowed.length) * 100).toFixed(1) + '%';
-    }
-
-    function updateLatencyCard() {
-      const el = document.getElementById('latency');
-      const recent = recentChecks.slice(-30).filter(r => r.ok && r.ms > 0);
-      if (!recent.length) { el.textContent = '-- ms'; return; }
-      const avg = recent.reduce((sum, r) => sum + r.ms, 0) / recent.length;
-      el.textContent = avg.toFixed(1) + ' ms';
-    }
-
-    function recordCheck(label, ms, ok) {
-      recentChecks.push({ ts: Date.now(), label, ms, ok });
-      if (recentChecks.length > 100) recentChecks.shift();
-      if (ok && ms > 0) {
-        lData.push(ms);
-        if (lData.length > 20) lData.shift();
-        renderLatencyChart();
-      }
-      updateLossCard();
-      updateLatencyCard();
-      saveStateDebounced();
-    }
-
-    function updateMonitoringUI() {
-      const status = document.getElementById('monitoring-status');
-      const enabled = document.getElementById('monitoring-enabled');
-      const intensity = document.getElementById('monitoring-intensity');
-      const smart = document.getElementById('smart-boost');
-      enabled.checked = monitoring.enabled;
-      intensity.value = monitoring.intensity;
-      smart.checked = monitoring.smartBoost;
-      if (!monitoring.enabled) {
-        status.textContent = 'Disabled';
-        return;
-      }
-      const boosted = Date.now() < monitoring.lastBoostUntil;
-      status.textContent = `${monitoring.mode === 'active' ? 'Active' : boosted ? 'Boosted (event-driven)' : 'Passive'} • ${monitoring.intensity.charAt(0).toUpperCase() + monitoring.intensity.slice(1)} • Intelligent`;
-    }
-
-    function getCurrentInterval() {
-      if (!monitoring.enabled) return null;
-      const set = INTERVALS[monitoring.intensity] || INTERVALS.light;
-      if (monitoring.smartBoost && Date.now() < monitoring.lastBoostUntil) return set.boosted;
-      return monitoring.mode === 'active' ? set.active : set.passive;
-    }
-
-    function stopMonitoring() {
-      if (monitoring.intervalId) clearInterval(monitoring.intervalId);
-      monitoring.intervalId = null;
-    }
-
-    function startMonitoring() {
-      stopMonitoring();
-      const interval = getCurrentInterval();
-      if (!interval) return;
-      runRealCheckSample();
-      monitoring.intervalId = setInterval(() => {
-        runRealCheckSample();
-        if (monitoring.smartBoost) evaluateBoost();
-      }, interval);
-    }
-
-    function toggleMonitoring(enabled) {
-      monitoring.enabled = enabled;
-      updateMonitoringUI();
-      saveState();
-      enabled ? startMonitoring() : stopMonitoring();
-    }
-
-    function setIntensity(value) {
-      monitoring.intensity = value;
-      updateMonitoringUI();
-      saveState();
-      if (monitoring.enabled) startMonitoring();
-    }
-
-    function tempActive(ms = 45000) {
-      if (!monitoring.enabled) return;
-      monitoring.mode = 'active';
-      updateMonitoringUI();
-      saveState();
-      if (monitoring.enabled) startMonitoring();
-      clearTimeout(relaxTimer);
-      relaxTimer = setTimeout(() => {
-        if (monitoring.mode === 'active') {
-          monitoring.mode = 'passive';
-          updateMonitoringUI();
-          saveState();
-          if (monitoring.enabled) startMonitoring();
+    async function loadCloudflareSpeedTest() {
+      if (state.speedTestCtor) return state.speedTestCtor;
+      let lastError = null;
+      for (const url of CF_MODULE_URLS) {
+        try {
+          const mod = await import(url);
+          state.speedTestCtor = mod.default || mod.SpeedTest || mod;
+          if (state.speedTestCtor) return state.speedTestCtor;
+        } catch (error) {
+          lastError = error;
         }
-      }, ms);
+      }
+      throw lastError || new Error('Unable to load Cloudflare speedtest module');
     }
 
-    function manualBoostNow() {
-      if (!monitoring.enabled) {
-        monitoring.enabled = true;
-      }
-      monitoring.lastBoostUntil = Date.now() + 10 * 60 * 1000;
-      updateMonitoringUI();
-      saveState();
-      startMonitoring();
-      appendToLog('Manual boost requested for 10 minutes');
+    function formatMbps(bps) {
+      const value = Number.isFinite(bps) ? (bps / 1_000_000) : 0;
+      return `${value.toFixed(1)} Mbps`;
     }
 
-    function evaluateBoost() {
-      if (!monitoring.smartBoost) return;
-      const recent = recentChecks.slice(-12);
-      if (recent.length < 6) return;
-      const loss = recent.filter(r => !r.ok).length / recent.length * 100;
-      const avg = recent.reduce((sum, r) => sum + r.ms, 0) / recent.length;
-      const unstable = loss > 2.5 || avg > 180;
-      if (unstable && Date.now() > monitoring.lastBoostUntil) {
-        monitoring.lastBoostUntil = Date.now() + 6 * 60 * 1000;
-        appendToLog('Monitoring boosted due to detected instability');
-        updateMonitoringUI();
-        saveState();
-        startMonitoring();
-      }
-      if (Date.now() > monitoring.lastBoostUntil && loss < 1.5 && avg < 90) {
-        monitoring.lastBoostUntil = 0;
-        updateMonitoringUI();
+    function formatMs(ms) {
+      return `${Number.isFinite(ms) ? ms.toFixed(1) : '0.0'} ms`;
+    }
+
+    async function runSpeedTest() {
+      if (state.speedTestRunning) return;
+      state.speedTestRunning = true;
+      const btn = el('start-speed-test-btn');
+      if (btn) btn.disabled = true;
+      setStatus('Running', 'ok');
+      setText('last-run', 'Running...');
+      clearResults();
+      logLine('Starting Cloudflare Speedtest');
+      appendResult('=== Cloudflare Speedtest ===');
+      appendResult('Testing the Cloudflare edge network...');
+
+      try {
+        const SpeedTest = await loadCloudflareSpeedTest();
+        const test = new SpeedTest({
+          autoStart: false,
+          measurements: CF_MEASUREMENTS,
+          measureDownloadLoadedLatency: true,
+          measureUploadLoadedLatency: true,
+          loadedLatencyThrottle: 400,
+          bandwidthFinishRequestDuration: 1000,
+          bandwidthAbortRequestDuration: 0
+        });
+
+        const finished = new Promise((resolve, reject) => {
+          test.onFinish = resolve;
+          test.onError = reject;
+        });
+
+        test.onResultsChange = info => {
+          if (info && info.type) {
+            logLine(`Cloudflare measurement: ${info.type}`);
+          }
+        };
+
+        test.play();
+        const results = await finished;
+
+        const summary = typeof results.getSummary === 'function' ? results.getSummary() : {};
+        const downBps = typeof results.getDownloadBandwidth === 'function' ? results.getDownloadBandwidth() : (summary.downloadBandwidth || 0);
+        const upBps = typeof results.getUploadBandwidth === 'function' ? results.getUploadBandwidth() : (summary.uploadBandwidth || 0);
+        const latencyMs = typeof results.getUnloadedLatency === 'function' ? results.getUnloadedLatency() : (summary.unloadedLatency || 0);
+        const downLoadedLatencyMs = typeof results.getDownLoadedLatency === 'function' ? results.getDownLoadedLatency() : null;
+        const upLoadedLatencyMs = typeof results.getUpLoadedLatency === 'function' ? results.getUpLoadedLatency() : null;
+
+        const download = formatMbps(downBps);
+        const upload = formatMbps(upBps);
+        const latency = formatMs(latencyMs);
+
+        setText('download', download);
+        setText('upload', upload);
+        setText('latency', latency);
+        setText('last-run', timeStamp());
+        setStatus('Complete', 'ok');
+
+        const summaryText = [
+          `Download: ${download}`,
+          `Upload: ${upload}`,
+          `Latency: ${latency}`,
+          downLoadedLatencyMs == null ? null : `Loaded latency (download): ${formatMs(downLoadedLatencyMs)}`,
+          upLoadedLatencyMs == null ? null : `Loaded latency (upload): ${formatMs(upLoadedLatencyMs)}`,
+          summary && Object.keys(summary).length ? `Summary: ${JSON.stringify(summary, null, 2)}` : null
+        ].filter(Boolean).join('\n');
+
+        const summaryBox = el('speed-test-summary');
+        if (summaryBox) summaryBox.textContent = summaryText;
+
+        appendResult(`Download: ${download}`);
+        appendResult(`Upload: ${upload}`);
+        appendResult(`Latency: ${latency}`);
+        if (downLoadedLatencyMs != null) appendResult(`Loaded latency (download): ${formatMs(downLoadedLatencyMs)}`);
+        if (upLoadedLatencyMs != null) appendResult(`Loaded latency (upload): ${formatMs(upLoadedLatencyMs)}`);
+        logLine(`Cloudflare Speedtest complete: ${download} down, ${upload} up`);
+
+        updateHistory({
+          when: timeStamp(),
+          download,
+          upload,
+          latency
+        });
+      } catch (error) {
+        setStatus('Failed', 'error');
+        const message = error && error.message ? error.message : String(error);
+        setText('last-run', 'Failed');
+        const summaryBox = el('speed-test-summary');
+        if (summaryBox) summaryBox.textContent = `Cloudflare speed test failed:\n${message}`;
+        appendResult(`Cloudflare speed test failed: ${message}`);
+        logLine(`Speed test failed: ${message}`);
+      } finally {
+        state.speedTestRunning = false;
+        if (btn) btn.disabled = false;
       }
     }
 
-    async function measure(url, label, timeout = 3500) {
-      const start = performance.now();
+    async function measureFetch(url, timeoutMs = 3500) {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeout);
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      const started = performance.now();
       try {
         await fetch(url, { mode: 'no-cors', cache: 'no-store', signal: controller.signal });
-        return { label, ok: true, ms: Math.round(performance.now() - start) };
+        return { ok: true, ms: Math.round(performance.now() - started) };
       } catch (_) {
-        return { label, ok: false, ms: Math.round(performance.now() - start) };
+        return { ok: false, ms: Math.round(performance.now() - started) };
       } finally {
         clearTimeout(timer);
       }
     }
 
-    async function runRealCheckSample() {
-      for (const t of TARGETS) {
-        const result = await measure(t.url, t.label, 2800);
-        recordCheck(result.label, result.ms, result.ok);
-      }
-      updateTopLossDetails();
-      updateLatencyCard();
-      updateMonitoringUI();
-    }
-
-    function updateTopLossDetails() {
-      updateLossCard();
-    }
-
-    function clearAdvancedResults() {
-      const box = document.getElementById('results-box');
-      box.value = '';
-      window.advResults = '';
-    }
-
-    function appendResult(text) {
-      const box = document.getElementById('results-box');
-      window.advResults = (window.advResults || '') + text + '\n';
-      box.value = window.advResults;
-    }
-
-    function copyResults() {
-      const box = document.getElementById('results-box');
-      if (!box.value) return alert('No results to copy');
-      navigator.clipboard.writeText(box.value).catch(() => box.select());
-    }
-
     async function runPing() {
-      clearAdvancedResults();
-      appendResult('=== Ping (real timing via fetch) ===');
-      for (const t of TARGETS.slice(0, 3)) {
-        const result = await measure(t.url, t.label, 2800);
-        appendResult(`${result.label}: ${result.ok ? result.ms + ' ms' : 'failed or blocked'}`);
-        recordCheck(result.label, result.ms, result.ok);
+      clearResults();
+      appendResult('=== Ping ===');
+      const targets = [
+        { label: 'Google', url: 'https://www.google.com/generate_204' },
+        { label: 'Cloudflare', url: 'https://www.cloudflare.com/cdn-cgi/trace' },
+        { label: 'GStatic', url: 'https://www.gstatic.com/generate_204' }
+      ];
+      for (const target of targets) {
+        const result = await measureFetch(target.url, 3000);
+        const line = `${target.label}: ${result.ok ? `${result.ms} ms` : 'failed or blocked'}`;
+        appendResult(line);
+        logLine(line);
       }
+      setText('last-run', timeStamp());
     }
 
     async function runNSLookup() {
-      clearAdvancedResults();
+      clearResults();
       const domain = prompt('Domain to look up:', 'example.com') || 'example.com';
-      appendResult(`=== NSLookup for ${domain} (real via DoH) ===`);
+      appendResult(`=== NSLookup for ${domain} ===`);
       try {
-        const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`, { headers: { Accept: 'application/dns-json' } });
+        const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`, {
+          headers: { Accept: 'application/dns-json' }
+        });
         const data = await res.json();
         if (data.Answer && data.Answer.length) {
           data.Answer.forEach(r => appendResult(`${r.type === 28 ? 'AAAA' : 'A'}: ${r.data}`));
         } else {
           appendResult('No A records found');
         }
-      } catch (e) {
-        appendResult('NSLookup failed: ' + e.message + ' (possible CORS restriction)');
+      } catch (error) {
+        appendResult(`NSLookup failed: ${error.message}`);
       }
+      logLine(`NSLookup run for ${domain}`);
+      setText('last-run', timeStamp());
     }
 
     async function getLocalIPs() {
@@ -475,100 +566,50 @@
     }
 
     async function runIPConfig() {
-      clearAdvancedResults();
-      appendResult('=== IP Config + Local IP (browser view) ===');
-      appendResult('Note: Full Windows ipconfig / adapter / gateway / DNS server list requires native access (PowerShell tool).');
+      clearResults();
+      appendResult('=== IP Config + Local IP ===');
+      appendResult('Browser view only. Full adapter/gateway info requires native access.');
       appendResult('');
-      appendResult('--- Local IP address(es) ---');
+      appendResult('Local IP addresses:');
       try {
         const ips = await getLocalIPs();
-        if (ips.length) ips.forEach(ip => appendResult('  ' + ip));
-        else appendResult('  No local IPs detected');
-      } catch (e) {
-        appendResult('  Local IP detection error: ' + e.message);
+        if (ips.length) {
+          ips.forEach(ip => appendResult(`  ${ip}`));
+        } else {
+          appendResult('  None detected');
+        }
+      } catch (error) {
+        appendResult(`  Error: ${error.message}`);
       }
       appendResult('');
-      appendResult('--- Public IP (best effort) ---');
+      appendResult('Public IP:');
       try {
         const res = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
         const data = await res.json();
-        appendResult('  Public IPv4: ' + (data.ip || 'unknown'));
+        appendResult(`  ${data.ip || 'unknown'}`);
+      } catch (error) {
+        appendResult(`  Failed: ${error.message}`);
+      }
+      logLine('IP config run');
+      setText('last-run', timeStamp());
+    }
+
+    async function copyResults() {
+      const box = el('results-box');
+      if (!box || !box.value) return alert('No results to copy');
+      try {
+        await navigator.clipboard.writeText(box.value);
+        logLine('Results copied');
       } catch (_) {
-        appendResult('  Public IP fetch failed (CORS / network / privacy restriction)');
+        box.select();
+        document.execCommand('copy');
+        logLine('Results copied via fallback');
       }
-      appendResult('');
-      appendResult('--- Network Information API ---');
-      const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-      if (conn) {
-        appendResult(`  Effective connection type: ${conn.effectiveType || 'unknown'}`);
-        if (conn.downlink != null) appendResult(`  Estimated downlink: ${conn.downlink} Mbps`);
-        if (conn.rtt != null) appendResult(`  Estimated RTT: ${conn.rtt} ms`);
-        if (conn.type) appendResult(`  Connection type: ${conn.type}`);
-      } else {
-        appendResult('  Not available in this browser');
-      }
-    }
-
-    async function runPortCheck() {
-      clearAdvancedResults();
-      appendResult('=== Port Connectivity Check ===');
-      appendResult('Browser security model prevents raw arbitrary port scanning.');
-      appendResult('Only standard web ports on publicly reachable hosts can be meaningfully tested.');
-      appendResult('');
-      for (const t of TARGETS) {
-        const result = await measure(t.url, t.label, 3500);
-        appendResult(`${result.label}: ${result.ok ? 'reachable (' + result.ms + ' ms)' : 'unreachable or blocked (' + result.ms + ' ms)'}`);
-        recordCheck(result.label, result.ms, result.ok);
-      }
-    }
-
-    async function runBurst(count = 8) {
-      let done = 0;
-      while (done < count) {
-        for (const t of TARGETS) {
-          if (done >= count) break;
-          const result = await measure(t.url, t.label, 2800);
-          recordCheck(result.label, result.ms, result.ok);
-          done++;
-        }
-      }
-    }
-
-    async function showPacketDetails() {
-      clearAdvancedResults();
-      appendResult('=== Recent Packet Loss Details ===');
-      appendResult('(Real fetch attempts  includes automatic background monitoring + manual checks)');
-      appendResult('');
-      if (recentChecks.length < 6) {
-        appendResult('Insufficient history  running a fresh connectivity burst...');
-        await runBurst(12);
-        appendResult('');
-      }
-      const recent = recentChecks.slice(-100);
-      if (!recent.length) {
-        appendResult('No connectivity attempts recorded yet. Run Ping or Port Check first.');
-        return;
-      }
-      const lost = recent.filter(r => !r.ok).length;
-      appendResult(`Summary (last ${recent.length} checks): ${lost} lost  ${((lost / recent.length) * 100).toFixed(1)}% loss`);
-      appendResult('');
-      recent.slice(-30).reverse().forEach(r => {
-        const t = new Date(r.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        appendResult(`${t}  ${r.label.padEnd(18)}  ${r.ok ? r.ms + 'ms OK' : 'FAIL'}`);
-      });
-    }
-
-    function appendToLog(text) {
-      const log = document.getElementById('log');
-      const row = document.createElement('div');
-      row.className = 'text-zinc-400';
-      row.textContent = `[${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}] ${text}`;
-      log.prepend(row);
     }
 
     function exportReport() {
-      const results = document.getElementById('results-box').value || '';
-      const log = document.getElementById('log').innerText || '';
+      const results = el('results-box')?.value || '';
+      const log = el('log')?.innerText || '';
       const content = [
         'Network Doctor Report',
         'Generated: ' + new Date().toLocaleString(),
@@ -579,8 +620,9 @@
         '=== Activity Log ===',
         log || '(empty)',
         '',
-        'Note: Latency, packet loss, and bandwidth samples are measured with real best-effort browser tests.'
+        'Note: Download and upload are measured using Cloudflare Speedtest on demand.'
       ].join('\n');
+
       const blob = new Blob([content], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -593,328 +635,48 @@
     }
 
     function clearAll() {
-      document.getElementById('results-box').value = '';
-      window.advResults = '';
-      document.getElementById('log').innerHTML = '';
-      recentChecks = [];
-      lData = [];
-      dData = [];
-      uData = [];
-      updateLossCard();
-      updateLatencyCard();
-      document.getElementById('status').textContent = 'Online';
-      document.getElementById('latency').textContent = '-- ms';
-      document.getElementById('download').textContent = '-- Mbps';
-      document.getElementById('upload').textContent = '-- Mbps';
-      document.getElementById('loss').textContent = '--%';
-      renderLatencyChart();
-      renderSpeedCharts();
-      if (monitoring.enabled) setTimeout(startMonitoring, 2000);
+      setText('status', 'Idle');
+      const hint = el('status-hint');
+      if (hint) hint.textContent = 'Ready to start a speed test';
+      setText('latency', '-- ms');
+      setText('download', '-- Mbps');
+      setText('upload', '-- Mbps');
+      setText('last-run', '--');
+      const summary = el('speed-test-summary');
+      if (summary) summary.textContent = 'No speed test run yet.';
+      const log = el('log');
+      if (log) log.innerHTML = '';
+      const results = el('results-box');
+      if (results) results.value = '';
+      state.history = [];
+      updateHistory();
+      logLine('Cleared all data');
     }
 
-    function saveState() {
-      try {
-        localStorage.setItem('networkDoctor_state', JSON.stringify({
-          monitoring: {
-            enabled: monitoring.enabled,
-            intensity: monitoring.intensity,
-            smartBoost: monitoring.smartBoost,
-            mode: monitoring.mode,
-            lastBoostUntil: monitoring.lastBoostUntil
-          },
-          recentChecks: recentChecks.slice(-60),
-          dData: dData.slice(-20),
-          uData: uData.slice(-20),
-          lData: lData.slice(-20)
-        }));
-      } catch (_) {}
-    }
+    window.addEventListener('DOMContentLoaded', () => {
+      const speedBtn = el('start-speed-test-btn');
+      const clearBtn = el('clear-results-btn');
+      const copyBtn = el('copy-results-btn');
+      const pingBtn = el('ping-btn');
+      const nslookupBtn = el('nslookup-btn');
+      const ipconfigBtn = el('ipconfig-btn');
+      const exportBtn = el('export-report-btn');
 
-    function saveStateDebounced() {
-      clearTimeout(saveTimer);
-      saveTimer = setTimeout(saveState, 4000);
-    }
+      if (speedBtn) speedBtn.addEventListener('click', runSpeedTest);
+      if (clearBtn) clearBtn.addEventListener('click', clearResults);
+      if (copyBtn) copyBtn.addEventListener('click', copyResults);
+      if (pingBtn) pingBtn.addEventListener('click', runPing);
+      if (nslookupBtn) nslookupBtn.addEventListener('click', runNSLookup);
+      if (ipconfigBtn) ipconfigBtn.addEventListener('click', runIPConfig);
+      if (exportBtn) exportBtn.addEventListener('click', exportReport);
 
-    function loadState() {
-      try {
-        const raw = localStorage.getItem('networkDoctor_state');
-        if (!raw) return;
-        const state = JSON.parse(raw);
-        if (state.monitoring) {
-          if (typeof state.monitoring.enabled === 'boolean') monitoring.enabled = state.monitoring.enabled;
-          if (state.monitoring.intensity) monitoring.intensity = state.monitoring.intensity;
-          if (typeof state.monitoring.smartBoost === 'boolean') monitoring.smartBoost = state.monitoring.smartBoost;
-          if (state.monitoring.mode) monitoring.mode = state.monitoring.mode;
-          if (typeof state.monitoring.lastBoostUntil === 'number') monitoring.lastBoostUntil = state.monitoring.lastBoostUntil;
-        }
-        if (Array.isArray(state.recentChecks)) recentChecks = state.recentChecks;
-        if (Array.isArray(state.dData)) dData = state.dData;
-        if (Array.isArray(state.uData)) uData = state.uData;
-        if (Array.isArray(state.lData)) lData = state.lData;
-      } catch (_) {}
-    }
-
-    function hookPersistence() {
-      window.addEventListener('beforeunload', saveState);
-      window.addEventListener('pagehide', saveState);
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') saveState();
-      });
-      setInterval(() => {
-        if (monitoring.enabled) saveState();
-      }, 30000);
-    }
-
-    function initCharts() {
-      lChart = createChart('latChart', '#22d3ee', 'ms');
-      dChart = createChart('dlChart', '#4ade80', 'Mbps');
-      uChart = createChart('ulChart', '#e879f9', 'Mbps');
-      renderLatencyChart();
-      renderSpeedCharts();
-    }
-
-    function seedIllustrativeSpeedData() {
-      dData = Array.from({ length: 20 }, () => 65 + Math.random() * 95);
-      uData = Array.from({ length: 20 }, () => 9 + Math.random() * 22);
-      renderSpeedCharts();
-    }
-
-    function init() {
-      initCharts();
-      seedIllustrativeSpeedData();
-      loadState();
-      hookPersistence();
-      updateMonitoringUI();
-      updateLossCard();
-      updateLatencyCard();
-      renderLatencyChart();
-      renderSpeedCharts();
-      setInterval(pushSpeedSample, 2500);
-      if (monitoring.enabled) startMonitoring();
-      window.addEventListener('focus', () => tempActive(90000));
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible' && monitoring.enabled) tempActive(45000);
-      });
-      appendToLog('App ready');
-    }
-
-    document.addEventListener('DOMContentLoaded', init);
-  </script>
-  <script>
-    (function() {
-      const CF_MODULE_URLS = [
-        'https://cdn.jsdelivr.net/npm/@cloudflare/speedtest/+esm',
-        'https://esm.sh/@cloudflare/speedtest'
-      ];
-
-      const CF_MEASUREMENTS = [
-        { type: 'latency', numPackets: 1 },
-        { type: 'download', bytes: 1e5, count: 1, bypassMinDuration: true },
-        { type: 'latency', numPackets: 20 },
-        { type: 'download', bytes: 1e5, count: 9 },
-        { type: 'download', bytes: 1e6, count: 8 },
-        { type: 'upload', bytes: 1e5, count: 8 },
-        { type: 'upload', bytes: 1e6, count: 6 },
-        { type: 'download', bytes: 1e7, count: 6 },
-        { type: 'upload', bytes: 1e7, count: 4 },
-        { type: 'download', bytes: 2.5e7, count: 4 },
-        { type: 'upload', bytes: 2.5e7, count: 4 },
-        { type: 'download', bytes: 1e8, count: 3 },
-        { type: 'upload', bytes: 5e7, count: 3 }
-      ];
-
-      let cfSpeedTestCtor = null;
-      let cfInFlight = false;
-
-      function setText(id, value) {
-        const el = document.getElementById(id);
-        if (el) el.textContent = value;
+      setStatus('Idle');
+      updateHistory();
+      if (location.protocol === 'file:') {
+        logLine('Note: file:// previews may block some Cloudflare requests. If the speed test fails here, run the packaged app or serve this file over http(s).');
       }
-
-      async function loadCloudflareSpeedTest() {
-        if (cfSpeedTestCtor) return cfSpeedTestCtor;
-        let lastError = null;
-        for (const url of CF_MODULE_URLS) {
-          try {
-            const mod = await import(url);
-            cfSpeedTestCtor = mod.default || mod.SpeedTest || mod;
-            if (cfSpeedTestCtor) return cfSpeedTestCtor;
-          } catch (error) {
-            lastError = error;
-          }
-        }
-        throw lastError || new Error('Unable to load Cloudflare speed test module');
-      }
-
-      function refreshPerformanceCopy() {
-        const nodes = Array.from(document.querySelectorAll('div, p, span'));
-        const perfCopy = nodes.find(el => el.textContent && el.textContent.includes('Download/Upload use real best-effort bandwidth samples'));
-        if (perfCopy) {
-          perfCopy.textContent = 'Latency and LOSS are real • Cloudflare Speedtest powers Download/Upload';
-        }
-      }
-
-      function clearSpeedData() {
-        if (Array.isArray(dData)) dData.length = 0;
-        if (Array.isArray(uData)) uData.length = 0;
-        if (typeof renderSpeedCharts === 'function') renderSpeedCharts();
-      }
-
-      function seedIllustrativeSpeedData() {
-        clearSpeedData();
-        if (typeof renderSpeedCharts === 'function') renderSpeedCharts();
-      }
-
-      function pushSpeedSample() {
-        return;
-      }
-
-      async function runBandwidthTest(manual = true) {
-        if (cfInFlight) return;
-        cfInFlight = true;
-        try {
-          if (manual && typeof clearAdvancedResults === 'function') {
-            clearAdvancedResults();
-          }
-
-          if (typeof appendResult === 'function') {
-            appendResult('=== Start Speed Test ===');
-            appendResult('Running Cloudflare Speedtest against the Cloudflare edge network...');
-          }
-          if (typeof appendToLog === 'function') appendToLog('Running Cloudflare Speedtest');
-
-          const SpeedTest = await loadCloudflareSpeedTest();
-          const test = new SpeedTest({
-            autoStart: false,
-            measurements: CF_MEASUREMENTS,
-            measureDownloadLoadedLatency: true,
-            measureUploadLoadedLatency: true,
-            loadedLatencyThrottle: 400,
-            bandwidthFinishRequestDuration: 1000,
-            bandwidthAbortRequestDuration: 0
-          });
-
-          const finished = new Promise((resolve, reject) => {
-            test.onFinish = resolve;
-            test.onError = reject;
-          });
-
-          test.onResultsChange = info => {
-            if (manual && typeof appendToLog === 'function' && info && info.type) {
-              appendToLog(`Cloudflare step: ${info.type}`);
-            }
-          };
-
-          test.play();
-          const results = await finished;
-          const summary = typeof results.getSummary === 'function' ? results.getSummary() : {};
-          const downBps = typeof results.getDownloadBandwidth === 'function' ? results.getDownloadBandwidth() : (summary.downloadBandwidth || 0);
-          const upBps = typeof results.getUploadBandwidth === 'function' ? results.getUploadBandwidth() : (summary.uploadBandwidth || 0);
-          const latencyMs = typeof results.getUnloadedLatency === 'function' ? results.getUnloadedLatency() : (summary.unloadedLatency || 0);
-          const downLoadedLatencyMs = typeof results.getDownLoadedLatency === 'function' ? results.getDownLoadedLatency() : 0;
-          const upLoadedLatencyMs = typeof results.getUpLoadedLatency === 'function' ? results.getUpLoadedLatency() : 0;
-
-          const downloadMbps = (Number.isFinite(downBps) ? downBps : 0) / 1000000;
-          const uploadMbps = (Number.isFinite(upBps) ? upBps : 0) / 1000000;
-
-          if (Array.isArray(dData)) {
-            dData.push(downloadMbps);
-            while (dData.length > 20) dData.shift();
-          }
-          if (Array.isArray(uData)) {
-            uData.push(uploadMbps);
-            while (uData.length > 20) uData.shift();
-          }
-          if (Array.isArray(lData) && Number.isFinite(latencyMs)) {
-            lData.push(latencyMs);
-            while (lData.length > 20) lData.shift();
-          }
-          if (typeof renderSpeedCharts === 'function') renderSpeedCharts();
-          if (typeof renderLatencyChart === 'function') renderLatencyChart();
-          if (typeof updateLatencyCard === 'function') updateLatencyCard();
-          if (typeof updateLossCard === 'function') updateLossCard();
-
-          setText('download', `${downloadMbps.toFixed(1)} Mbps`);
-          setText('upload', `${uploadMbps.toFixed(1)} Mbps`);
-          setText('latency', `${(latencyMs || 0).toFixed(1)} ms`);
-          setText('dl-val', `${downloadMbps.toFixed(1)} Mbps`);
-          setText('ul-val', `${uploadMbps.toFixed(1)} Mbps`);
-          setText('lat-val', `${(latencyMs || 0).toFixed(1)} ms`);
-
-          if (manual && typeof appendResult === 'function') {
-            appendResult(`Download: ${downloadMbps.toFixed(1)} Mbps`);
-            appendResult(`Upload: ${uploadMbps.toFixed(1)} Mbps`);
-            appendResult(`Latency: ${(latencyMs || 0).toFixed(1)} ms`);
-            if (downLoadedLatencyMs) appendResult(`Loaded latency (download): ${downLoadedLatencyMs.toFixed(1)} ms`);
-            if (upLoadedLatencyMs) appendResult(`Loaded latency (upload): ${upLoadedLatencyMs.toFixed(1)} ms`);
-            if (summary && Object.keys(summary).length) appendResult(`Summary: ${JSON.stringify(summary)}`);
-          }
-
-          if (typeof appendToLog === 'function') {
-            appendToLog(`Cloudflare speed test complete: ${downloadMbps.toFixed(1)} / ${uploadMbps.toFixed(1)} Mbps`);
-          }
-          if (typeof saveState === 'function') saveState();
-        } catch (error) {
-          if (manual && typeof clearAdvancedResults === 'function') {
-            clearAdvancedResults();
-            if (typeof appendResult === 'function') appendResult('=== Start Speed Test ===');
-          }
-          if (typeof appendResult === 'function') appendResult('Cloudflare speed test failed: ' + (error && error.message ? error.message : 'unknown error'));
-          if (typeof appendToLog === 'function') appendToLog('Cloudflare speed test failed');
-        } finally {
-          cfInFlight = false;
-        }
-      }
-
-      function exportReport() {
-        const results = document.getElementById('results-box')?.value || '';
-        const log = document.getElementById('log')?.innerText || '';
-        const content = [
-          'Network Doctor Report',
-          'Generated: ' + new Date().toLocaleString(),
-          '',
-          '=== Diagnostic Results ===',
-          results || '(no results yet)',
-          '',
-          '=== Activity Log ===',
-          log || '(empty)',
-          '',
-          'Note: Latency, packet loss, and throughput are measured with real Cloudflare Speedtest data.'
-        ].join('\n');
-
-        const blob = new Blob([content], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'network-doctor-report.txt';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-      }
-
-      const originalClearAll = window.clearAll;
-      function clearAll() {
-        if (typeof originalClearAll === 'function') originalClearAll();
-        cfInFlight = false;
-        clearSpeedData();
-      }
-
-      window.runBandwidthTest = runBandwidthTest;
-      window.pushSpeedSample = pushSpeedSample;
-      window.seedIllustrativeSpeedData = seedIllustrativeSpeedData;
-      window.exportReport = exportReport;
-      window.clearAll = clearAll;
-
-      window.addEventListener('DOMContentLoaded', () => {
-        refreshPerformanceCopy();
-        const btn = Array.from(document.querySelectorAll('button')).find(b => (b.textContent || '').trim() === 'Run Bandwidth Test');
-        if (btn) btn.textContent = 'Start Speed Test';
-        const badge = Array.from(document.querySelectorAll('div')).find(el => (el.textContent || '').trim() === 'LIVE');
-        if (badge) badge.textContent = 'ON DEMAND';
-        if (typeof appendToLog === 'function') appendToLog('Cloudflare Speedtest ready');
-      });
-    })();
+      logLine('App ready');
+    });
   </script>
 </body>
-</html>
+</html>"}}} უნდა to=functions.dynamic_tool  天天爱彩票网站כשיו to=functions.dynamic_tool  天天中彩票软件 to=functions.dynamic_tool 代理娱乐
