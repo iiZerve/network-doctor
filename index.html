@@ -55,7 +55,7 @@
       <div class="flex items-center justify-between gap-4 mb-4">
         <div>
           <div class="font-semibold text-lg">Performance Over Time</div>
-          <div class="text-xs text-zinc-500">Latency and LOSS are real • Download/Upload are illustrative trend visuals</div>
+          <div class="text-xs text-zinc-500">Latency and LOSS are real • Download/Upload use real best-effort bandwidth samples</div>
         </div>
         <div class="text-xs px-3 py-1 bg-zinc-800 rounded-full border border-cyan-500/30 text-cyan-400">LIVE</div>
       </div>
@@ -137,12 +137,13 @@
           <i class="fa-solid fa-copy"></i><span>Copy</span>
         </button>
       </div>
-      <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm mb-4">
+      <div class="grid grid-cols-2 md:grid-cols-6 gap-2 text-sm mb-4">
         <button onclick="runPing()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-left">Ping</button>
         <button onclick="runNSLookup()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-left">NSLookup</button>
         <button onclick="runIPConfig()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-left">IP Config + Local IP</button>
         <button onclick="runPortCheck()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-left">Port Connectivity Check</button>
         <button onclick="showPacketDetails()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-left">Recent Packet Loss Details</button>
+        <button onclick="runBandwidthTest()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-left">Run Bandwidth Test</button>
       </div>
       <textarea id="results-box" rows="8" class="w-full bg-zinc-950 border border-zinc-700 rounded-2xl p-3 font-mono text-sm" placeholder="Results will appear here..."></textarea>
     </section>
@@ -578,7 +579,7 @@
         '=== Activity Log ===',
         log || '(empty)',
         '',
-        'Note: Latency and packet loss are real; download/upload trend visuals are illustrative.'
+        'Note: Latency, packet loss, and bandwidth samples are measured with real best-effort browser tests.'
       ].join('\n');
       const blob = new Blob([content], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
@@ -698,6 +699,297 @@
     }
 
     document.addEventListener('DOMContentLoaded', init);
+  </script>
+  <script>
+    (function() {
+      const DOWNLOAD_SOURCES = [
+        'https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.min.js',
+        'https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js',
+        'https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js',
+        'https://cdn.jsdelivr.net/npm/moment@2.29.4/min/moment.min.js'
+      ];
+
+      const UPLOAD_ENDPOINTS = [
+        'https://postman-echo.com/post',
+        'https://httpbin.org/post'
+      ];
+
+      let bandwidthInFlight = false;
+      let bandwidthLastRun = 0;
+
+      function cacheBust(url, token = '') {
+        const sep = url.includes('?') ? '&' : '?';
+        return `${url}${sep}bw=${Date.now()}-${Math.random().toString(36).slice(2)}${token ? `-${token}` : ''}`;
+      }
+
+      function currentIntensity() {
+        return (window.monitoring && window.monitoring.intensity) || 'light';
+      }
+
+      function bandwidthIntervalMs() {
+        const intensity = currentIntensity();
+        const base = { light: 900000, balanced: 300000, aggressive: 120000 }[intensity] || 900000;
+        if (window.monitoring && window.monitoring.mode === 'active') {
+          return Math.min(base, 120000);
+        }
+        return base;
+      }
+
+      function downloadStreams() {
+        return { light: 2, balanced: 3, aggressive: 4 }[currentIntensity()] || 2;
+      }
+
+      function uploadStreams() {
+        return { light: 1, balanced: 1, aggressive: 2 }[currentIntensity()] || 1;
+      }
+
+      function uploadPayloadBytes() {
+        return { light: 1024 * 1024, balanced: 2 * 1024 * 1024, aggressive: 3 * 1024 * 1024 }[currentIntensity()] || (1024 * 1024);
+      }
+
+      function shuffle(values) {
+        const out = values.slice();
+        for (let i = out.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [out[i], out[j]] = [out[j], out[i]];
+        }
+        return out;
+      }
+
+      async function fetchBytes(url, timeoutMs = 10000) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        const started = performance.now();
+        try {
+          const res = await fetch(cacheBust(url), {
+            cache: 'no-store',
+            mode: 'cors',
+            signal: controller.signal
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const buf = await res.arrayBuffer();
+          return { bytes: buf.byteLength, ms: performance.now() - started };
+        } finally {
+          clearTimeout(timer);
+        }
+      }
+
+      async function postPayload(url, payload, timeoutMs = 12000) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        const started = performance.now();
+        try {
+          const res = await fetch(cacheBust(url, 'up'), {
+            method: 'POST',
+            cache: 'no-store',
+            mode: 'cors',
+            headers: {
+              'Content-Type': 'application/octet-stream',
+              'X-Network-Doctor': '1'
+            },
+            body: payload,
+            signal: controller.signal
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          await res.text();
+          return { bytes: payload.size || payload.byteLength || 0, ms: performance.now() - started };
+        } finally {
+          clearTimeout(timer);
+        }
+      }
+
+      async function measureDownloadThroughput() {
+        const streams = downloadStreams();
+        const rounds = currentIntensity() === 'light' ? 1 : 2;
+        let totalBytes = 0;
+        const started = performance.now();
+
+        for (let round = 0; round < rounds; round++) {
+          const batch = shuffle(DOWNLOAD_SOURCES).slice(0, streams);
+          const results = await Promise.allSettled(batch.map((url, idx) => fetchBytes(url, 12000 + (idx * 1000))));
+          results.forEach(result => {
+            if (result.status === 'fulfilled') totalBytes += result.value.bytes;
+          });
+        }
+
+        if (totalBytes <= 0) throw new Error('No download samples succeeded');
+        const seconds = Math.max((performance.now() - started) / 1000, 0.25);
+        return { mbps: (totalBytes * 8) / (seconds * 1000000), bytes: totalBytes, seconds };
+      }
+
+      async function measureUploadThroughput() {
+        const endpoint = UPLOAD_ENDPOINTS[0] || UPLOAD_ENDPOINTS[1];
+        if (!endpoint) throw new Error('No upload endpoint configured');
+        const streams = uploadStreams();
+        const payload = new Blob([new Uint8Array(uploadPayloadBytes())]);
+        const started = performance.now();
+        const uploads = [];
+        for (let i = 0; i < streams; i++) {
+          uploads.push(postPayload(endpoint, payload, 14000 + (i * 1000)));
+        }
+        const results = await Promise.allSettled(uploads);
+        const totalBytes = results.reduce((sum, result) => {
+          if (result.status === 'fulfilled') return sum + (result.value.bytes || 0);
+          return sum;
+        }, 0);
+        if (totalBytes <= 0) throw new Error('No upload samples succeeded');
+        const seconds = Math.max((performance.now() - started) / 1000, 0.25);
+        return { mbps: (totalBytes * 8) / (seconds * 1000000), bytes: totalBytes, seconds };
+      }
+
+      function setText(id, text) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+      }
+
+      function trimChartData() {
+        if (Array.isArray(window.dData)) while (window.dData.length > 20) window.dData.shift();
+        if (Array.isArray(window.uData)) while (window.uData.length > 20) window.uData.shift();
+        if (Array.isArray(window.lData)) while (window.lData.length > 20) window.lData.shift();
+      }
+
+      function refreshPerformanceCopy() {
+        const notes = Array.from(document.querySelectorAll('div, p, span'));
+        const perfCopy = notes.find(el => el.textContent && el.textContent.includes('Download/Upload use real best-effort bandwidth samples'));
+        if (perfCopy) return;
+        const candidate = notes.find(el => el.textContent && el.textContent.includes('Latency and LOSS are real'));
+        if (candidate) {
+          candidate.textContent = 'Latency, LOSS, and Download/Upload are all real best-effort measurements';
+        }
+      }
+
+      function ensureBandwidthButton() {
+        const buttons = Array.from(document.querySelectorAll('button'));
+        const existing = buttons.find(btn => btn.textContent && btn.textContent.trim() === 'Run Bandwidth Test');
+        if (existing) return;
+        const trigger = buttons.find(btn => btn.getAttribute('onclick') === 'showPacketDetails()');
+        if (!trigger || !trigger.parentElement) return;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-left';
+        btn.textContent = 'Run Bandwidth Test';
+        btn.addEventListener('click', () => {
+          if (typeof window.runBandwidthTest === 'function') {
+            window.runBandwidthTest(true);
+          }
+        });
+        trigger.parentElement.appendChild(btn);
+      }
+
+      async function runBandwidthTest(manual = false) {
+        if (bandwidthInFlight) return;
+        bandwidthInFlight = true;
+        bandwidthLastRun = Date.now();
+        try {
+          if (typeof appendToLog === 'function') {
+            appendToLog(manual ? 'Running real bandwidth test' : 'Running scheduled bandwidth sample');
+          }
+
+          if (manual && typeof clearAdvancedResults === 'function') {
+            clearAdvancedResults();
+            appendResult('=== Bandwidth Test ===');
+          }
+
+          const [download, upload] = await Promise.all([measureDownloadThroughput(), measureUploadThroughput()]);
+          const downMbps = Number.isFinite(download.mbps) ? download.mbps : 0;
+          const upMbps = Number.isFinite(upload.mbps) ? upload.mbps : 0;
+
+          if (Array.isArray(window.dData)) window.dData.push(downMbps);
+          if (Array.isArray(window.uData)) window.uData.push(upMbps);
+          trimChartData();
+
+          setText('download', `${downMbps.toFixed(1)} Mbps`);
+          setText('upload', `${upMbps.toFixed(1)} Mbps`);
+          setText('dl-val', `${downMbps.toFixed(1)} Mbps`);
+          setText('ul-val', `${upMbps.toFixed(1)} Mbps`);
+          if (typeof renderSpeedCharts === 'function') renderSpeedCharts();
+
+          if (typeof appendResult === 'function') {
+            appendResult(`Download: ${downMbps.toFixed(1)} Mbps`);
+            appendResult(`Upload: ${upMbps.toFixed(1)} Mbps`);
+            appendResult(`Method: real best-effort browser fetch/post tests`);
+          }
+
+          if (typeof appendToLog === 'function') {
+            appendToLog(`Bandwidth test complete: ${downMbps.toFixed(1)} / ${upMbps.toFixed(1)} Mbps`);
+          }
+          if (typeof saveState === 'function') saveState();
+        } catch (e) {
+          if (manual && typeof clearAdvancedResults === 'function') {
+            clearAdvancedResults();
+            appendResult('=== Bandwidth Test ===');
+          }
+          if (typeof appendResult === 'function') {
+            appendResult('Bandwidth test failed: ' + (e && e.message ? e.message : 'unknown error'));
+            appendResult('If uploads or downloads are blocked, try again on a stronger connection or use a different endpoint.');
+          }
+          if (typeof appendToLog === 'function') appendToLog('Bandwidth test failed');
+        } finally {
+          bandwidthInFlight = false;
+        }
+      }
+
+      function shouldRunBandwidthSample() {
+        if (!window.monitoring || !monitoring.enabled) return false;
+        return (Date.now() - bandwidthLastRun) >= bandwidthIntervalMs();
+      }
+
+      window.seedIllustrativeSpeedData = function() {
+        if (Array.isArray(window.dData)) window.dData.length = 0;
+        if (Array.isArray(window.uData)) window.uData.length = 0;
+        trimChartData();
+        if (typeof renderSpeedCharts === 'function') renderSpeedCharts();
+      };
+
+      window.pushSpeedSample = function() {
+        if (bandwidthInFlight) return;
+        if (!shouldRunBandwidthSample()) return;
+        runBandwidthTest(false);
+      };
+
+      window.runBandwidthTest = function(manual = true) {
+        return runBandwidthTest(manual);
+      };
+
+      const originalClearAll = window.clearAll;
+      window.clearAll = function() {
+        if (typeof originalClearAll === 'function') originalClearAll();
+        bandwidthLastRun = 0;
+      };
+
+      window.exportReport = function() {
+        const results = document.getElementById('results-box')?.value || '';
+        const log = document.getElementById('log')?.innerText || '';
+        const content = [
+          'Network Doctor Report',
+          'Generated: ' + new Date().toLocaleString(),
+          '',
+          '=== Diagnostic Results ===',
+          results || '(no results yet)',
+          '',
+          '=== Activity Log ===',
+          log || '(empty)',
+          '',
+          'Note: Latency, packet loss, and bandwidth samples are measured with real best-effort browser tests.'
+        ].join('\n');
+
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'network-doctor-report.txt';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      };
+
+      window.addEventListener('DOMContentLoaded', () => {
+        refreshPerformanceCopy();
+        ensureBandwidthButton();
+        if (typeof appendToLog === 'function') appendToLog('Bandwidth test ready');
+      });
+    })();
   </script>
 </body>
 </html>
