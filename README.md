@@ -10,7 +10,7 @@ Advanced local network diagnostics — available as both a **Windows PowerShell 
 
 ### Key Features (Android)
 - Real packet loss tracking via actual TCP probes (Light/Balanced/Aggressive modes + smart event-driven boost)
-- Live metrics + high-resolution illustrative Performance Over Time charts (Download/Upload/Latency trends)
+- Live latency + packet loss metrics, plus high-resolution illustrative Performance Over Time charts (Download/Upload trend visuals)
 - Full diagnostic toolkit: Ping (real timing), Cloudflare DoH NSLookup, Local/Public IP, Port checks, detailed loss history
 - 100% local processing — no accounts, no analytics, no PII sent to developer
 - Foreground service for reliable background monitoring with user-visible notification
@@ -19,7 +19,7 @@ Advanced local network diagnostics — available as both a **Windows PowerShell 
 
 See [BUILD_AND_RELEASE.md](BUILD_AND_RELEASE.md) for build instructions, Play Store assets, and submission checklist.
 
-**Important for Charts**: The "Performance Over Time" section uses simulated illustrative data for dense visual trends. Real packet loss, latency samples, and tool results are 100% real and shown in the LOSS metric + Diagnostic Tools panel.
+**Important for Charts**: The "Performance Over Time" section uses illustrative download/upload trend visuals so the dashboard stays readable at a glance. Real packet loss, latency samples, and tool results are 100% real and shown in the LOSS metric + Diagnostic Tools panel.
 
 ## Windows PowerShell Tool
 
