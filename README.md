@@ -1,10 +1,61 @@
-# network-doctor
+# Network Doctor
 
-An advanced, opinionated PowerShell toolkit for diagnosing and mitigating unstable cable internet connections — specifically built around the **Hitron CGM4331SHW** (common Rogers/Shaw Ignite Gateway) + Intel Wi-Fi 6 AX201 adapter combination.
+Advanced local network diagnostics — available as both a **Windows PowerShell desktop tool** and an **Android mobile app** (Capacitor).
 
-> **Note**: This tool cannot fix ISP-side problems. It excels at giving you visibility, generating high-quality support reports, and applying the best possible client-side optimizations.
+> **Note**: This tool cannot fix ISP-side problems (e.g. Rogers/Shaw plant issues). It excels at giving you visibility, generating high-quality support reports, and applying the best possible client-side optimizations.
 
-## Why This Exists
+## Android App (Google Play - v1.0.0)
+
+**Network Doctor** is also available as a native Android app for on-the-go diagnostics and intelligent background monitoring.
+
+### Key Features (Android)
+- Real packet loss tracking via actual TCP probes (Light/Balanced/Aggressive modes + smart event-driven boost)
+- Live metrics + high-resolution illustrative Performance Over Time charts (Download/Upload/Latency trends)
+- Full diagnostic toolkit: Ping (real timing), Cloudflare DoH NSLookup, Local/Public IP, Port checks, detailed loss history
+- 100% local processing — no accounts, no analytics, no PII sent to developer
+- Foreground service for reliable background monitoring with user-visible notification
+
+**Privacy First**: All diagnostics run locally. Probes only to public infrastructure (Google DNS, Cloudflare, etc.). UI libraries loaded from CDNs (documented in PRIVACY_POLICY.md).
+
+See [BUILD_AND_RELEASE.md](BUILD_AND_RELEASE.md) for build instructions, Play Store assets, and submission checklist.
+
+**Important for Charts**: The "Performance Over Time" section uses simulated illustrative data for dense visual trends. Real packet loss, latency samples, and tool results are 100% real and shown in the LOSS metric + Diagnostic Tools panel.
+
+## Windows PowerShell Tool
+
+The original advanced toolkit for deep Wi-Fi diagnostics, especially for **Hitron CGM4331SHW** (Rogers/Shaw Ignite) + Intel AX201.
+
+See full details below and in ROADMAP.md / CHANGELOG.md.
+
+## Quick Start - Android (from source)
+
+```bash
+git clone https://github.com/iiZerve/network-doctor.git
+cd network-doctor
+npm install
+npm run build:android:debug   # or open:android for Studio
+```
+
+APK will be in `android/app/build/outputs/apk/debug/`.
+
+For release .aab: See BUILD_AND_RELEASE.md (requires keystore setup).
+
+## Installation (PowerShell Desktop Tool - Recommended)
+
+```cmd
+git clone https://github.com/iiZerve/network-doctor.git
+cd network-doctor
+
+install.cmd
+```
+
+Then type `network-doctor` in a new terminal.
+
+Full PowerShell documentation, features, and usage in the sections below (original README content preserved for the desktop tool).
+
+---
+
+## Why This Exists (Desktop)
 
 Many users on Rogers/Shaw (especially in Winnipeg) experience frequent full-network drops (5–15 minutes) where the gateway LED goes blinking green or solid red. The entire LAN dies — not just internet. Standard troubleshooting rarely helps because the root cause is usually on the Rogers side.
 
@@ -14,7 +65,7 @@ This tool was built to:
 - Apply the best realistic Wi-Fi adapter tweaks for this specific problematic hardware combo
 - Track outage patterns over time
 
-## Current Features
+## Current Features (Desktop)
 
 - **Advanced Monitoring**
   - High-resolution pinging with latency, jitter, and packet loss
@@ -34,107 +85,9 @@ This tool was built to:
   - One-click generation of a professional report for Rogers/Shaw support, including your observed gateway LED behavior
 
 - **Manual Observation Logging**
-  - Easily log gateway light states (`light solid red`, `light blinking green`, etc.) during outages
+  - Easily log gateway light states during outages
 
-
-## Installation (Recommended)
-
-The easiest and most reliable way:
-
-```cmd
-git clone https://github.com/iiZerve/network-doctor.git
-cd network-doctor
-
-install.cmd
-```
-
-This uses a `.cmd` wrapper that bypasses PowerShell execution policy restrictions (very common when running elevated or in locked-down environments).
-
-After the installer finishes:
-- Restart your terminal
-- Type `network-doctor` to launch
-
-### Alternative (if .cmd doesn't work)
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\install.ps1
-```
-
-### Recommended Method (Simplest)
-
-```powershell
-git clone https://github.com/iiZerve/network-doctor.git
-cd network-doctor
-
-powershell -ExecutionPolicy Bypass -File .\install.ps1
-```
-
-The installer will:
-The installer now **automatically removes any previous broken or corrupted files** before installing the new version. This prevents the parser errors you were seeing earlier.
-- Copy the tool to `C:\Users\YourName\Tools`
-- Create a `network-doctor` command
-- Optionally add the folder to your PATH
-
-After installation (and restarting your terminal), you can simply type:
-
-```powershell
-network-doctor
-```
-
-### Alternative: Run directly from the folder
-
-```powershell
-cd network-doctor
-.\network-doctor.cmd
-```
-
-Or:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\src\AdvancedNetworkMonitor.ps1
-```
-
-### Option 1: Using the installer (Recommended)
-
-```powershell
-git clone https://github.com/iiZerve/network-doctor.git
-cd network-doctor
-
-# Run the installer
-powershell -ExecutionPolicy Bypass -File .\install.ps1 -CreateAlias
-```
-
-After installation you can simply type `network-doctor` in PowerShell.
-
-### Option 2: Manual
-
-```powershell
-git clone https://github.com/iiZerve/network-doctor.git
-cd network-doctor
-
-powershell -ExecutionPolicy Bypass -File ".\src\AdvancedNetworkMonitor.ps1"
-```
-### Requirements
-- Windows 10/11
-- PowerShell 5.1 or PowerShell 7+
-- Administrator rights (recommended for some optimizations)
-
-### Quick Start
-
-**Most reliable way (recommended):**
-
-```cmd
-git clone https://github.com/iiZerve/network-doctor.git
-cd network-doctor
-
-NetworkDoctor.cmd
-```
-
-This works even in elevated PowerShell or environments with strict execution policies.
-
-After installation (see below), you can also just type `network-doctor` from anywhere.
-
-## Usage
+## Usage (Desktop)
 
 The tool has an interactive menu with these main options:
 
@@ -145,20 +98,9 @@ The tool has an interactive menu with these main options:
 5. **Generate Rogers Support Report**
 6. Exit
 
-## Planned / Future Features
-
-- Better outage visualization and graphs
-- Automatic detection of common Rogers gateway LED states
-- Integration with router APIs (when bridge mode is used)
-- Exportable "before vs after" performance reports
-- Scheduled/background monitoring mode
-- More adapter-specific tuning for Intel AX series cards
-
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-This project started as a personal troubleshooting tool. Contributions, ideas, and improvements (especially around Rogers/Shaw gateway behavior) are very welcome.
 
 ## License
 
@@ -168,41 +110,18 @@ MIT License
 
 This is a client-side diagnostic and optimization tool only. It does not modify your ISP equipment. All responsibility for changes made via the optimization features lies with the user.
 
-
-
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for current status and future plans.
-
-
-
-
-
-
-
-
+See [ROADMAP.md](ROADMAP.md) for current status and future plans (includes both desktop and Android tracks).
 
 ## Using as a PowerShell Module (Advanced)
 
-If you install via the module option, you can do:
-
 ```powershell
 Import-Module NetworkDoctor
-
-# Launch the full tool
 Start-NetworkDoctor
-
-# Update the tool from GitHub
-Update-NetworkDoctor
-
-# Run diagnostics programmatically
-Get-NetworkDiagnostics
 ```
 
-
-
-
-## Quick Start
+## Quick Start (Desktop)
 
 **Most reliable way (recommended):**
 
@@ -215,7 +134,7 @@ NetworkDoctor.cmd
 
 This works even in elevated PowerShell or environments with strict execution policies.
 
-After installation (see below), you can also just type `network-doctor` from anywhere.
+After installation, you can also just type `network-doctor` from anywhere.
 
 ### Important: Execution Policy Issues
 
@@ -226,20 +145,3 @@ If you see "running scripts is disabled on this system" when trying to run `.ps1
 ```
 
 This bypasses the PowerShell execution policy restriction.
-
-
-
-
-
-
-
-### Force Reinstall (if you have corrupted files)
-
-If the tool is flashing errors or the installed files got messed up, use:
-
-```powershell
-.\install.cmd -Force
-```
-
-This will aggressively delete any old/broken `NetworkDoctor.ps1` and shims before installing fresh copies.
-
