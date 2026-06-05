@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Doctor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; }
+    </style>
+<style>
+    
+</style>
+</head>
+<body class="bg-zinc-950 text-zinc-200">
+    <div class="max-w-7xl mx-auto p-6">
+        <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-blue-600 rounded-3xl flex items-center justify-center">
+                    <i class="fa-solid fa-network-wired text-3xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-4xl font-semibold">Network Doctor</h1>
+                    <p class="text-zinc-500 text-sm">Advanced local network diagnostics</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Metrics -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+            <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5">
+                <div class="text-xs text-zinc-400">STATUS</div>
+                <div id="status" class="text-3xl font-semibold mt-2 text-emerald-400">Online</div>
+            </div>
+            <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5">
+                <div class="text-xs text-zinc-400">LATENCY</div>
+                <div id="latency" class="text-3xl font-semibold mt-2 font-mono">18.4 ms</div>
+            </div>
+            <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5">
+                <div class="text-xs text-zinc-400">DOWNLOAD</div>
+                <div id="download" class="text-3xl font-semibold mt-2 font-mono">142 Mbps</div>
+            </div>
+            <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5">
+                <div class="text-xs text-zinc-400">UPLOAD</div>
+                <div id="upload" class="text-3xl font-semibold mt-2 font-mono">24 Mbps</div>
+            </div>
+            <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5">
+                <div class="text-xs text-zinc-400">LOSS</div>
+                <div id="loss" class="text-3xl font-semibold mt-2 font-mono">--%</div>
+            </div>
+        </div>
+
+                <!-- Performance Over Time - Limited to last 5 samples, neon style -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-8">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <div class="font-semibold text-lg">Performance Over Time</div>
+                    <div class="text-xs text-zinc-500">Last 20 samples (50 seconds) <span class="text-amber-400">(Latency real from probes • D/U illustrative)</span></div>
+                    <div class="text-[10px] mt-1 text-zinc-500 flex flex-wrap gap-x-4 gap-y-0.5">
+                        <span>Download <span id="dl-avg" class="font-mono text-emerald-400">--</span></span>
+                        <span>Upload <span id="ul-avg" class="font-mono text-fuchsia-400">--</span></span>
+                        <span>Latency <span id="lat-avg" class="font-mono text-cyan-400">--</span></span>
+                    </div>
+                </div>
+                <div class="text-xs px-3 py-1 bg-zinc-800 rounded-full border border-cyan-500/30 text-cyan-400">LIVE</div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Download -->
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-emerald-400 font-medium">Download</span>
+                        <span id="dl-val" class="font-mono text-xs text-zinc-400">-- Mbps</span>
+                    </div>
+                    <div class="relative h-36 bg-zinc-950 rounded-2xl overflow-hidden border border-zinc-800">
+                        <canvas id="dlChart" class="w-full h-full" ></canvas>
+                    </div>
+                </div>
+
+                <!-- Upload -->
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-fuchsia-400 font-medium">Upload</span>
+                        <span id="ul-val" class="font-mono text-xs text-zinc-400">-- Mbps</span>
+                    </div>
+                    <div class="relative h-36 bg-zinc-950 rounded-2xl overflow-hidden border border-zinc-800">
+                        <canvas id="ulChart" class="w-full h-full" ></canvas>
+                    </div>
+                </div>
+
+                <!-- Latency -->
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="text-cyan-400 font-medium">Latency</span>
+                        <span id="lat-val" class="font-mono text-xs text-zinc-400">-- ms</span>
+                    </div>
+                    <div class="relative h-36 bg-zinc-950 rounded-2xl overflow-hidden border border-zinc-800">
+                        <canvas id="latChart" class="w-full h-full" ></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Monitoring Controls -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 mb-8">
+            <div class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 mb-3">
+                <div>
+                    <div class="font-semibold">Real-time Monitoring</div>
+                    <div id="monitoring-status" class="text-xs text-emerald-400">Passive • Light (very lightweight) • Intelligent</div>
+                </div>
+                
+                <div class="flex items-center gap-2">
+                    <label class="flex items-center gap-1.5 text-sm cursor-pointer">
+                        <input type="checkbox" id="monitoring-enabled" checked onchange="toggleBackgroundMonitoring(this.checked)" class="accent-emerald-500">
+                        <span>Background monitoring</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="flex items-center gap-1.5 text-sm">
+                    <span class="text-zinc-400">Intensity:</span>
+                    <select id="monitoring-intensity" onchange="setMonitoringIntensity(this.value)" 
+                            class="bg-zinc-800 border border-zinc-700 rounded-xl px-3 py-1 text-sm focus:outline-none">
+                        <option value="light" selected>Light (very battery friendly)</option>
+                        <option value="balanced">Balanced</option>
+                        <option value="aggressive">Aggressive</option>
+                    </select>
+                </div>
+
+                <label class="flex items-center gap-1.5 text-sm cursor-pointer">
+                    <input type="checkbox" id="smart-boost" checked onchange="monitoring.smartBoost = this.checked; updateMonitoringUI()" class="accent-emerald-500">
+                    <span>Intelligent Active Background Monitoring</span>
+                </label>
+
+                <div class="text-xs text-zinc-500 ml-auto">
+                    Default is extremely lightweight (10 min passive)
+                </div>
+            </div>
+        </div>
+
+        <!-- Diagnostic Tools (always visible below the graphs) -->
+        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <div class="font-semibold text-lg">Diagnostic Tools</div>
+                <button onclick="copyResults()" 
+                        class="text-xs px-3 py-1 bg-zinc-800 hover:bg-zinc-700 rounded-xl flex items-center gap-1 border border-zinc-600">
+                    <i class="fa-solid fa-copy"></i>
+                    <span>Copy</span>
+                </button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-sm mb-4">
+                <button onclick="runPing()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-left">Ping</button>
+                <button onclick="runNSLookup()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-left">NSLookup</button>
+                <button onclick="runIPConfig()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-left">IP Config + Local IP</button>
+                <button onclick="runPortCheck()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-left">Port Connectivity Check</button>
+                <button onclick="showPacketDetails()" class="bg-zinc-800 hover:bg-zinc-700 px-3 py-2 rounded-xl text-left">Recent Packet Loss Details</button>
+            </div>
+            <textarea id="results-box" rows="7" class="w-full bg-zinc-950 border border-zinc-700 rounded-2xl p-3 font-mono text-sm" placeholder="Results will appear here..."></textarea>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="mb-8">
+            <div class="font-semibold mb-3 text-lg">Quick Actions</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <button onclick="exportReport()" 
+                        class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-3xl p-5 text-left transition-colors">
+                    <i class="fa-solid fa-file-export text-purple-400 text-xl mb-3"></i>
+                    <div class="font-medium">Export Full Report</div>
+                </button>
+                <button onclick="clearAll()" 
+                        class="bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-3xl p-5 text-left transition-colors">
+                    <div class="font-medium">Clear All Data</div>
+                </button>
+            </div>
+        </div>
+
+        <div>
+            <div class="font-semibold mb-2">Activity Log</div>
+            <div id="log" class="bg-zinc-900 border border-zinc-800 rounded-3xl p-4 h-72 overflow-auto font-mono text-sm"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// === CLEAN 5-POINT NEON PERFORMANCE CHARTS ===
+
+let lChart, dChart, uChart;
+let lData = [], dData = [], uData = [];
+
+function getPerfLabels() {
+    const labels = new Array(20).fill('');
+    const timeLabels = [
+        {t:45, s:'-45s'}, {t:40, s:'-40s'}, {t:35, s:'-35s'},
+        {t:30, s:'-30s'}, {t:25, s:'-25s'}, {t:20, s:'-20s'},
+        {t:15, s:'-15s'}, {t:10, s:'-10s'}, {t:5, s:'-5s'}, {t:0, s:'Now'}
+    ];
+    timeLabels.forEach(({t, s}) => {
+        const idx = Math.round(19 - (t / 2.5));
+        if (idx >= 0 && idx < 20) labels[idx] = s;
+    });
+    return labels;
+}
+
+function avgLast(arr, n = 4) {
+    if (!arr || arr.length === 0) return 0;
+    const k = Math.min(n, arr.length);
+    const slice = arr.slice(-k);
+    const sum = slice.reduce((a, b) => a + (b || 0), 0);
+    return sum / k;
+}
+
+function makeNeonLineChart(canvasId, color, yLabel) {
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return null;
+
+    return new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: getPerfLabels(),
+            datasets: [{
+                data: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                borderColor: color,
+                borderWidth: 2,
+                tension: 0.1,
+                pointRadius: 0,
+                pointHoverRadius: 2,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 200 },
+            plugins: { 
+                legend: { display: false },
+                tooltip: { 
+                    backgroundColor: '#18181b',
+                    borderColor: color,
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                x: { 
+                    grid: { color: 'rgba(255,255,255,0.08)' }, 
+                    ticks: { color: '#a1a1aa', font: { size: 10 } },
+                    title: { display: true, text: 'Time', color: '#a1a1aa', font: { size: 10 } }
+                },
+                y: { 
+                    display: true, 
+                    grid: { color: 'rgba(255,255,255,0.08)' },
+                    ticks: { color: '#a1a1aa', font: { size: 9 }, padding: 4 },
+                    title: { display: true, text: yLabel, color: '#a1a1aa', font: { size: 10 } },
+                    grace: '15%'
+                }
+            }
+        }
+    });
+}
+
+function init5PointCharts() {
+    if (lChart) lChart.destroy();
+    if (dChart) dChart.destroy();
+    if (uChart) uChart.destroy();
+
+    lChart = makeNeonLineChart('latChart', '#22d3ee', 'ms');
+    dChart = makeNeonLineChart('dlChart', '#4ade80', 'Mbps');
+    uChart = makeNeonLineChart('ulChart', '#e879f9', 'Mbps');
+
+     // Strong neon glow via CSS (fixed to use loop variable)
+    const glowFilters = {
+        'latChart': 'drop-shadow(0 0 4px rgba(34,211,238,0.5)) drop-shadow(0 0 8px rgba(34,211,238,0.5))',
+        'dlChart':  'drop-shadow(0 0 4px rgba(74,222,128,0.5)) drop-shadow(0 0 8px rgba(74,222,128,0.5))',
+        'ulChart':  'drop-shadow(0 0 4px rgba(232,121,249,0.5)) drop-shadow(0 0 8px rgba(232,121,249,0.5))'
+    };
+    ['latChart','dlChart','ulChart'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && glowFilters[id]) {
+            el.style.filter = glowFilters[id];
+        }
+    });
+
+function refresh5PointCharts() {
+    const labels = getPerfLabels();
+    if (lChart) lChart.data.labels = labels;
+    if (dChart) dChart.data.labels = labels;
+    if (uChart) uChart.data.labels = labels;
+    if (!lChart) init5PointCharts();
+
+    const max = 20;
+    lChart.data.datasets[0].data = lData.slice(-max);
+    dChart.data.datasets[0].data = dData.slice(-max);
+    uChart.data.datasets[0].data = uData.slice(-max);
+
+    lChart.update('none');
+    dChart.update('none');
+    uChart.update('none');
+
+    if (lData.length) document.getElementById('lat-val').textContent = lData[lData.length-1].toFixed(1) + ' ms';
+    if (dData.length) document.getElementById('dl-val').textContent = dData[dData.length-1].toFixed(1) + ' Mbps';
+    if (uData.length) document.getElementById('ul-val').textContent = uData[uData.length-1].toFixed(1) + ' Mbps';
+
+    // Rolling last 10s averages (4 samples @ 2.5s)
+    const latAvg = avgLast(lData, 4);
+    const dlAvg = avgLast(dData, 4);
+    const ulAvg = avgLast(uData, 4);
+    const latAvgEl = document.getElementById('lat-avg');
+    const dlAvgEl = document.getElementById('dl-avg');
+    const ulAvgEl = document.getElementById('ul-avg');
+    if (latAvgEl) latAvgEl.textContent = latAvg ? latAvg.toFixed(1) + ' ms' : '--';
+    if (dlAvgEl) dlAvgEl.textContent = dlAvg ? dlAvg.toFixed(0) + ' Mbps' : '--';
+    if (ulAvgEl) ulAvgEl.textContent = ulAvg ? ulAvg.toFixed(0) + ' Mbps' : '--';
+}
+
+function pushPoint(lat, dl, ul) {
+    lData.push(lat || 0);
+    dData.push(dl || 0);
+    uData.push(ul || 0);
+    if (lData.length > 20) lData.shift();
+    if (dData.length > 20) dData.shift();
+    if (uData.length > 20) uData.shift();
+    refresh5PointCharts();
+}
+
+// Live illustrative updates for Download/Upload visual density (Latency is now real from probes)
+setInterval(() => {
+    const dl  = 55 + Math.random() * 170;
+    const ul  = 7 + Math.random() * 42;
+
+    const dlEl = document.getElementById('download');
+    const ulEl = document.getElementById('upload');
+    if (dlEl) dlEl.textContent = dl.toFixed(1) + ' Mbps';
+    if (ulEl) ulEl.textContent = ul.toFixed(1) + ' Mbps';
+
+    // Only push dl/ul to their charts; latency chart is fed real data from monitoring
+    if (typeof dData !== 'undefined' && typeof uData !== 'undefined') {
+        dData.push(dl);
+        uData.push(ul);
+        if (dData.length > 20) dData.shift();
+        if (uData.length > 20) uData.shift();
+
+        if (dChart && dChart.data && dChart.data.datasets && dChart.data.datasets[0]) {
+            dChart.data.datasets[0].data = dData.slice(-20);
+            dChart.update('none');
+        }
+        if (uChart && uChart.data && uChart.data.datasets && uChart.data.datasets[0]) {
+            uChart.data.datasets[0].data = uData.slice(-20);
+            uChart.update('none');
+        }
+
+        const dlValEl = document.getElementById('dl-val');
+        const ulValEl = document.getElementById('ul-val');
+        if (dlValEl) dlValEl.textContent = dl.toFixed(1) + ' Mbps';
+        if (ulValEl) ulValEl.textContent = ul.toFixed(1) + ' Mbps';
+    }
+}, 2500);
+
+window.onload = function() {
+    // seed exactly 5 points
+    for (let i = 0; i < 20; i++) {
+        lData.push(14 + Math.random() * 26);
+        dData.push(65 + Math.random() * 95);
+        uData.push(9 + Math.random() * 22);
+    }
+    init5PointCharts();
+    refresh5PointCharts();
+
+    // Restore previous monitoring settings + history
+    loadMonitoringState();
+
+    // Start intelligent three-tier monitoring
+    startMonitoring();
+    updateMonitoringUI();
+
+    // Hook persistence for settings and recentChecks
+    hookPersistence();
+
+    // Promote to Active mode on user interaction / focus
+    ['focus', 'mousemove', 'keydown', 'click'].forEach(evt => {
+        window.addEventListener(evt, () => {
+            if (monitoring.enabled && monitoring.mode !== 'active') {
+                setMonitoringMode('active');
+                // Drop back to passive after 90 seconds of inactivity
+                setTimeout(() => {
+                    if (monitoring.mode === 'active') setMonitoringMode('passive');
+                }, 90000);
+            }
+        }, { once: true, passive: true });
+    });
+
+    // When tab becomes visible, go active briefly
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && monitoring.enabled) {
+            setMonitoringMode('active');
+            setTimeout(() => {
+                if (monitoring.mode === 'active') setMonitoringMode('passive');
+            }, 45000);
+        }
+    });
+};
+
+// === Helper for Advanced Tools results ===
+function clearAdvancedResults() {
+    const ta = document.getElementById('results-box');
+    if (ta) ta.value = '';
+    window.advResults = '';
+}
+
+function appendResult(text) {
+    const ta = document.getElementById('results-box');
+    if (!ta) return;
+    if (!window.advResults) window.advResults = '';
+    window.advResults += text + '\n';
+    ta.value = window.advResults;
+}
+
+function copyResults() {
+    const ta = document.getElementById('results-box');
+    if (!ta || !ta.value) return alert('No results to copy');
+    navigator.clipboard.writeText(ta.value).then(() => {
+        const old = ta.value;
+        ta.value = 'Copied!';
+        setTimeout(() => { if (ta) ta.value = old; }, 1200);
+    }).catch(() => {
+        ta.select();
+        document.execCommand('copy');
+        alert('Copied (fallback)');
+    });
+}
+
+// === Export & Clear (stubs so buttons are functional) ===
+function exportReport() {
+    const results = document.getElementById('results-box')?.value || '';
+    const log = document.getElementById('log')?.innerText || '';
+    const content = [
+        'Network Doctor Report',
+        'Generated: ' + new Date().toLocaleString(),
+        '',
+        '=== Diagnostic Results ===',
+        results || '(no results yet)',
+        '',
+        '=== Activity Log ===',
+        log || '(empty)',
+        '',
+        'Note: For full detailed reports with packet loss graphs etc., use the PowerShell NetworkDoctor tool.'
+    ].join('\n');
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'network-doctor-report.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function clearAll() {
+    // Clear diagnostic results
+    const ta = document.getElementById('results-box');
+    if (ta) ta.value = '';
+    window.advResults = '';
+
+    // Clear activity log
+    const log = document.getElementById('log');
+    if (log) log.innerHTML = '';
+
+    // Reset live chart data + real loss history
+    lData.length = 0;
+    dData.length = 0;
+    uData.length = 0;
+    recentChecks.length = 0;
+    if (lChart) lChart.data.datasets[0].data = [];
+    if (dChart) dChart.data.datasets[0].data = [];
+    if (uChart) uChart.data.datasets[0].data = [];
+    if (lChart) lChart.update('none');
+    if (dChart) dChart.update('none');
+    if (uChart) uChart.update('none');
+
+    // Reset top metrics to defaults
+    const status = document.getElementById('status');
+    if (status) status.textContent = 'Online';
+    const els = {
+        latency: document.getElementById('latency'),
+        download: document.getElementById('download'),
+        upload: document.getElementById('upload'),
+        loss: document.getElementById('loss')
+    };
+    if (els.latency) els.latency.textContent = '-- ms';
+    if (els.download) els.download.textContent = '-- Mbps';
+    if (els.upload) els.upload.textContent = '-- Mbps';
+    if (els.loss) els.loss.textContent = '--%';
+
+    // Restart monitoring cleanly after clear
+    stopMonitoring();
+    setTimeout(() => {
+        if (monitoring.enabled) startMonitoring();
+    }, 4000);
+
+    // Clear value labels under charts
+    const valEls = ['lat-val', 'dl-val', 'ul-val'];
+    valEls.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = id.includes('lat') ? '-- ms' : '-- Mbps';
+    });
+}
+
+// === REAL Ping using fetch timing ===
+async function runPing() {
+    clearAdvancedResults();
+    const targets = ['8.8.8.8', '1.1.1.1', '9.9.9.9'];
+    appendResult('=== Ping (real timing via fetch) ===');
+
+    for (let target of targets) {
+        try {
+            const start = performance.now();
+            await fetch(`https://${target}`, { mode: 'no-cors', cache: 'no-store' });
+            const ms = (performance.now() - start).toFixed(1);
+            appendResult(`${target}: ${ms} ms`);
+            recordCheck(target, parseFloat(ms), true);
+        } catch (e) {
+            appendResult(`${target}: failed or blocked`);
+            recordCheck(target, 0, false);
+        }
+    }
+}
+
+// === REAL NSLookup using DNS over HTTPS (Cloudflare) ===
+async function runNSLookup() {
+    const domain = prompt('Domain to look up:', 'example.com') || 'example.com';
+    clearAdvancedResults();
+    appendResult(`=== NSLookup for ${domain} (real via DoH) ===`);
+
+    try {
+        const url = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=A`;
+        const res = await fetch(url, {
+            headers: { 'Accept': 'application/dns-json' }
+        });
+        const data = await res.json();
+
+        if (data.Answer && data.Answer.length > 0) {
+            data.Answer.forEach(record => {
+                const type = record.type === 1 ? 'A' : (record.type === 28 ? 'AAAA' : record.type);
+                appendResult(`${type}: ${record.data}`);
+            });
+        } else {
+            appendResult('No A records found');
+        }
+    } catch (e) {
+        appendResult('NSLookup failed: ' + e.message + ' (possible CORS restriction)');
+    }
+}
+
+// === Shared history for real connectivity attempts (feeds Packet Loss Details) ===
+let recentChecks = []; // {ts, target, ms, ok}
+
+const MAX_RECENT_CHECKS = 100;
+const LOSS_SUMMARY_WINDOW = 100;
+const DETAIL_ROWS = 30;
+
+function recordCheck(target, ms, ok) {
+    recentChecks.push({ ts: Date.now(), target, ms: ms || 0, ok: !!ok });
+    if (recentChecks.length > MAX_RECENT_CHECKS) recentChecks.shift();
+
+    // Keep the top LOSS card live whenever we get new real data
+    updateTopLossDisplay();
+
+    // Persist history (debounced)
+    saveRecentChecksDebounced();
+}
+
+// === Three-Tier Real Monitoring System ===
+// 1. Active (page focused + interacting) — relatively frequent
+// 2. Passive (background) — conservative + fully user-controlled  
+// 3. Event-Driven — temporarily boosts when problems are detected
+
+/*
+================================================================================
+ANDROID / CAPACITOR ARCHITECTURE RECOMMENDATIONS (for future app)
+================================================================================
+
+GOAL: Make the app feel useful during real outages while being extremely
+      respectful of battery and data — especially in the default "Light" mode.
+
+-------------------------------------------------------------------------------
+TIER 1 — ACTIVE MONITORING (when app is in foreground)
+-------------------------------------------------------------------------------
+- Use normal JavaScript timers or a Foreground Service.
+- Frequency: 10–20 seconds is acceptable while the user is actively using the app.
+- This tier can safely do the 4-check burst.
+
+-------------------------------------------------------------------------------
+TIER 2 — PASSIVE BACKGROUND (the most important to get right)
+-------------------------------------------------------------------------------
+Default should be **very lightweight**.
+
+Recommended defaults for production Android app:
+  • Light (default):        Every 15–30 minutes
+  • Balanced:               Every 5–10 minutes
+  • Aggressive:             Every 2–3 minutes (with strong warning)
+
+Implementation strategy:
+  • Use **WorkManager** with `setPeriodic()` and `setConstraints()`.
+  • Use **inexact** timing so Android can batch work.
+  • Add constraints:
+      - Only run on WiFi by default (user can change)
+      - Respect battery level
+      - Use `setRequiresBatteryNotLow(true)`
+  • Never use a raw foreground service for passive monitoring.
+
+Battery optimization handling:
+  • On first launch, explain the trade-offs.
+  • Only ask for "Ignore battery optimizations" if user explicitly chooses
+    Aggressive mode.
+  • Show clear status: "Next background check in ~47 minutes"
+
+-------------------------------------------------------------------------------
+TIER 3 — EVENT-DRIVEN BOOST (the feature that makes it smart)
+-------------------------------------------------------------------------------
+This is the killer feature for real-world use.
+
+How it should work on Android:
+  1. Passive monitoring runs at very low frequency.
+  2. When the user opens the app, or when a passive check detects early
+     warning signs (loss > 2%, latency variance high, consecutive failures),
+     the app requests a **temporary boost**.
+  3. During boost window (e.g. 8–15 minutes):
+       - Use a short-lived Foreground Service or expedited WorkManager.
+       - Run checks every 15–30 seconds.
+  4. After the window, or when stability returns for 5+ minutes → drop back
+     to passive.
+
+Benefits:
+  • Extremely low background cost 95% of the time.
+  • High resolution exactly when the user needs it (during problems).
+  • Much better user experience than constant medium-frequency background work.
+
+Capacitor implementation notes:
+  • Use @capacitor/background-runner or WorkManager plugin.
+  • For temporary high-frequency work, start a Foreground Service with
+    a notification ("Network Doctor is actively monitoring").
+  • Stop the service automatically when boost window ends.
+
+-------------------------------------------------------------------------------
+PERSISTENCE STRATEGY (already partially implemented in web version)
+-------------------------------------------------------------------------------
+- Always persist user settings (enabled, intensity, smartBoost).
+- Persist recentChecks (last 50–100 samples) so the LOSS % and history
+  survive app restarts / phone reboots.
+- On Android, use SharedPreferences + Room (or just JSON files) for simplicity.
+
+-------------------------------------------------------------------------------
+ADDITIONAL BEST PRACTICES FOR ANDROID
+-------------------------------------------------------------------------------
+- Default the entire app to "Light" mode on first install.
+- Prominently show current monitoring status and next check time.
+- Provide a one-tap "Boost now for 10 minutes" button.
+- When on mobile data, automatically use even more conservative intervals.
+- Allow "Pause until I open the app again".
+- Log when monitoring caused battery impact (for transparency).
+
+This three-tier + event-driven model is significantly better than most
+network monitoring apps, which either:
+  a) Hammer the network constantly in background, or
+  b) Only work when the app is open.
+
+================================================================================
+*/
+
+let monitoring = {
+    intervalId: null,
+    mode: 'passive',           // 'active' | 'passive' | 'boosted'
+    enabled: true,
+    intensity: 'light',        // 'light' (default - very lightweight) | 'balanced' | 'aggressive'
+    smartBoost: true,
+    lastBoostUntil: 0
+};
+
+const MONITOR_INTERVALS = {
+    // As lightweight as reasonably possible for default passive
+    light:     { passive: 600000, active: 45000, boosted: 30000 },   // 10 min / 45s / 30s
+    balanced:  { passive: 120000, active: 15000, boosted: 12000 },   // 2 min / 15s / 12s
+    aggressive:{ passive: 45000,  active: 8000,  boosted: 6000 }     // 45s / 8s / 6s
+};
+
+function getCurrentInterval() {
+    const ints = MONITOR_INTERVALS[monitoring.intensity] || MONITOR_INTERVALS.balanced;
+    
+    if (!monitoring.enabled) return null;
+
+    // Event-driven boost takes priority
+    if (monitoring.smartBoost && Date.now() < monitoring.lastBoostUntil) {
+        return ints.boosted;
+    }
+    
+    if (monitoring.mode === 'active') return ints.active;
+    return ints.passive;
+}
+
+function startMonitoring() {
+    stopMonitoring();
+    if (!monitoring.enabled) return;
+
+    const interval = getCurrentInterval();
+    if (!interval) return;
+
+    // Run one immediately
+    runRealCheckSample();
+
+    monitoring.intervalId = setInterval(() => {
+        if (document.visibilityState === 'hidden' && monitoring.mode !== 'active') {
+            // In passive mode, we still run occasionally even if tab hidden (for basic coverage)
+        }
+        runRealCheckSample();
+        
+        // Periodically evaluate whether we should boost or relax
+        if (monitoring.smartBoost) {
+            evaluateEventDrivenBoost();
+        }
+    }, interval);
+}
+
+function stopMonitoring() {
+    if (monitoring.intervalId) {
+        clearInterval(monitoring.intervalId);
+        monitoring.intervalId = null;
+    }
+}
+
+function setMonitoringMode(newMode) {
+    if (monitoring.mode === newMode) return;
+    monitoring.mode = newMode;
+    updateMonitoringUI();
+    restartMonitoringIfNeeded();
+}
+
+function restartMonitoringIfNeeded() {
+    if (monitoring.enabled && monitoring.intervalId) {
+        startMonitoring(); // restarts with correct interval
+    }
+}
+
+function setMonitoringIntensity(newIntensity) {
+    monitoring.intensity = newIntensity;
+    updateMonitoringUI();
+    saveMonitoringState();
+    restartMonitoringIfNeeded();
+}
+
+function toggleBackgroundMonitoring(enabled) {
+    monitoring.enabled = enabled;
+    updateMonitoringUI();
+    saveMonitoringState();
+    
+    if (enabled) {
+        startMonitoring();
+    } else {
+        stopMonitoring();
+    }
+}
+
+function triggerEventBoost(durationMinutes = 8) {
+    monitoring.lastBoostUntil = Date.now() + (durationMinutes * 60 * 1000);
+    updateMonitoringUI();
+    restartMonitoringIfNeeded();
+}
+
+function evaluateEventDrivenBoost() {
+    if (!monitoring.smartBoost) return;
+
+    const recent = recentChecks.slice(-12);
+    if (recent.length < 6) return;
+
+    const loss = (recent.filter(r => !r.ok).length / recent.length) * 100;
+    const avgLatency = recent.reduce((sum, r) => sum + r.ms, 0) / recent.length;
+
+    const isUnstable = loss > 2.5 || avgLatency > 180;
+
+    if (isUnstable && Date.now() > monitoring.lastBoostUntil) {
+        // Problems detected → boost monitoring temporarily
+        triggerEventBoost(6);
+        appendToLog('Monitoring boosted due to detected instability');
+    }
+
+    // Auto-relax if things have been stable for a while
+    if (Date.now() > monitoring.lastBoostUntil && loss < 1.5 && avgLatency < 90) {
+        monitoring.lastBoostUntil = 0;
+        updateMonitoringUI();
+    }
+}
+
+async function runRealCheckSample() {
+    const targets = ['8.8.8.8', '1.1.1.1', '9.9.9.9', 'www.cloudflare.com'];
+
+    for (const host of targets) {
+        const start = performance.now();
+        let ok = false;
+
+        try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 2800);
+            await fetch(`https://${host}`, {
+                mode: 'no-cors',
+                cache: 'no-store',
+                signal: controller.signal
+            });
+            clearTimeout(timeout);
+            ok = true;
+        } catch (_) {}
+
+        const ms = Math.round(performance.now() - start);
+        recordCheck(host, ms, ok);
+    }
+
+    updateTopLossDisplay();
+    updateRealLatencyFromChecks();
+}
+
+function updateMonitoringUI() {
+    const statusEl = document.getElementById('monitoring-status');
+    const enabledCheckbox = document.getElementById('monitoring-enabled');
+    const intensitySelect = document.getElementById('monitoring-intensity');
+    const smartCheckbox = document.getElementById('smart-boost');
+
+    if (!statusEl) return;
+
+    let text = '';
+    if (!monitoring.enabled) {
+        text = 'Disabled';
+    } else {
+        const isBoosted = Date.now() < monitoring.lastBoostUntil;
+        const modeLabel = monitoring.mode === 'active' ? 'Active' : 
+                         (isBoosted ? 'Boosted (event-driven)' : 'Passive');
+        const intensityLabel = monitoring.intensity.charAt(0).toUpperCase() + monitoring.intensity.slice(1);
+        const boostLabel = monitoring.smartBoost ? ' • Intelligent' : '';
+        text = `${modeLabel} • ${intensityLabel}${boostLabel}`;
+    }
+    statusEl.textContent = text;
+
+    if (enabledCheckbox) enabledCheckbox.checked = monitoring.enabled;
+    if (intensitySelect) intensitySelect.value = monitoring.intensity;
+    if (smartCheckbox) smartCheckbox.checked = monitoring.smartBoost;
+}
+
+function appendToLog(text) {
+    const log = document.getElementById('log');
+    if (!log) return;
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    log.innerHTML = `<div class="text-zinc-400">[${time}] ${text}</div>` + log.innerHTML;
+}
+
+// === Persistence (settings + recent loss history survive refresh) ===
+function saveMonitoringState() {
+    try {
+        const state = {
+            enabled: monitoring.enabled,
+            intensity: monitoring.intensity,
+            smartBoost: monitoring.smartBoost,
+            recentChecks: recentChecks.slice(-60) // keep last 60 checks
+        };
+        localStorage.setItem('networkDoctor_monitoring', JSON.stringify(state));
+    } catch (e) {}
+}
+
+function loadMonitoringState() {
+    try {
+        const raw = localStorage.getItem('networkDoctor_monitoring');
+        if (!raw) return;
+
+        const state = JSON.parse(raw);
+        
+        if (typeof state.enabled === 'boolean') monitoring.enabled = state.enabled;
+        if (state.intensity) monitoring.intensity = state.intensity;
+        if (typeof state.smartBoost === 'boolean') monitoring.smartBoost = state.smartBoost;
+
+        if (Array.isArray(state.recentChecks)) {
+            recentChecks = state.recentChecks;
+            updateTopLossDisplay();
+        }
+    } catch (e) {}
+}
+
+// Persistence is hooked directly in the relevant functions below
+function saveRecentChecksDebounced() {
+    if (!window._saveTimeout) {
+        window._saveTimeout = setTimeout(() => {
+            saveMonitoringState();
+            window._saveTimeout = null;
+        }, 4500);
+    }
+}
+
+function updateTopLossDisplay() {
+    const el = document.getElementById('loss');
+    if (!el) return;
+
+    // Use last 20-30 real checks for a reasonably stable number
+    const recent = recentChecks.slice(-28);
+    if (recent.length < 4) {
+        el.textContent = '--%';
+        return;
+    }
+
+    const lost = recent.filter(r => !r.ok).length;
+    const pct = ((lost / recent.length) * 100).toFixed(1);
+    el.textContent = pct + '%';
+}
+
+/**
+ * Update top Latency card + feed real latency samples into the latency chart.
+ * This makes the Latency metric and chart real (based on actual probe timings).
+ * Download/Upload remain illustrative for visual density (clearly noted in UI).
+ */
+function updateRealLatencyFromChecks() {
+    const latEl = document.getElementById('latency');
+    if (!latEl) return;
+
+    // Use recent successful checks for stable average
+    const recentSuccess = recentChecks.slice(-30).filter(r => r.ok && r.ms > 0);
+    if (recentSuccess.length === 0) {
+        latEl.textContent = '-- ms';
+        return;
+    }
+
+    const avgMs = recentSuccess.reduce((sum, r) => sum + r.ms, 0) / recentSuccess.length;
+    latEl.textContent = avgMs.toFixed(1) + ' ms';
+
+    // Feed real latency into the latency chart data so it becomes meaningful over time
+    if (typeof lData !== 'undefined' && lChart) {
+        lData.push(avgMs);
+        if (lData.length > 20) lData.shift();
+        if (lChart.data && lChart.data.datasets && lChart.data.datasets[0]) {
+            lChart.data.datasets[0].data = lData.slice(-20);
+            lChart.update('none');
+        }
+        // Update the small current value label under the chart
+        const latValEl = document.getElementById('lat-val');
+        if (latValEl) latValEl.textContent = avgMs.toFixed(1) + ' ms';
+    }
+}
+
+// === Helper: get local IPs via WebRTC (best browser technique available) ===
+async function getLocalIPs() {
+    return new Promise((resolve) => {
+        const ips = new Set();
+        let pc;
+        try {
+            pc = new RTCPeerConnection({
+                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+            });
+            pc.createDataChannel('');
+            pc.onicecandidate = (e) => {
+                if (!e.candidate) {
+                    if (pc) { try { pc.close(); } catch (_) {} }
+                    resolve(Array.from(ips));
+                    return;
+                }
+                const m = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[0-9a-f:]+)/i.exec(e.candidate.candidate || '');
+                if (m && m[1]) ips.add(m[1]);
+            };
+            pc.createOffer()
+              .then(offer => pc.setLocalDescription(offer))
+              .catch(() => { /* ignore */ });
+
+            // Safety timeout
+            setTimeout(() => {
+                if (pc) { try { pc.close(); } catch (_) {} }
+                resolve(Array.from(ips));
+            }, 1400);
+        } catch (e) {
+            resolve([]);
+        }
+    });
+}
+
+// === IP Config + Local IP (real browser APIs + honest limits) ===
+async function runIPConfig() {
+    clearAdvancedResults();
+    appendResult('=== IP Config + Local IP (browser view) ===');
+    appendResult('Note: Full Windows ipconfig / adapter / gateway / DNS server list requires native access (PowerShell tool).');
+    appendResult('This shows what is detectable from a browser sandbox.');
+    appendResult('');
+
+    // Local private IPs (WebRTC STUN)
+    appendResult('--- Local IP address(es) ---');
+    try {
+        const ips = await getLocalIPs();
+        if (ips.length > 0) {
+            ips.forEach(ip => appendResult('  ' + ip));
+        } else {
+            appendResult('  No local IPs detected (WebRTC may be disabled or blocked by browser policy)');
+        }
+    } catch (e) {
+        appendResult('  Local IP detection error: ' + e.message);
+    }
+
+    // Public IP (best-effort, public CORS endpoint)
+    appendResult('');
+    appendResult('--- Public IP (best effort) ---');
+    try {
+        const res = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
+        if (res.ok) {
+            const data = await res.json();
+            appendResult('  Public IPv4: ' + (data.ip || 'unknown'));
+        } else {
+            throw new Error('HTTP ' + res.status);
+        }
+    } catch (e) {
+        appendResult('  Public IP fetch failed (CORS / network / privacy restriction)');
+    }
+
+    // Network Information API (where supported)
+    appendResult('');
+    appendResult('--- Network Information API ---');
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (conn) {
+        appendResult(`  Effective connection type: ${conn.effectiveType || 'unknown'}`);
+        if (conn.downlink != null) appendResult(`  Estimated downlink: ${conn.downlink} Mbps`);
+        if (conn.rtt != null) appendResult(`  Estimated RTT: ${conn.rtt} ms`);
+        if (conn.type) appendResult(`  Connection type: ${conn.type}`);
+        if (conn.saveData) appendResult('  Data Saver mode: active');
+    } else {
+        appendResult('  Not available in this browser (Chrome/Edge on some platforms expose it)');
+    }
+
+    appendResult('');
+    appendResult('Tip: Use the PowerShell "NetworkDoctor" tool for complete ipconfig / netsh / adapter details.');
+}
+
+// === Port Connectivity Check (real TCP attempts the browser will allow) ===
+async function runPortCheck() {
+    clearAdvancedResults();
+    appendResult('=== Port Connectivity Check ===');
+    appendResult('Browser security model prevents raw arbitrary port scanning.');
+    appendResult('Only standard web ports (mainly 443) on publicly reachable hosts can be meaningfully tested.');
+    appendResult('');
+
+    const tests = [
+        { label: 'Google DNS 443', host: '8.8.8.8', port: 443 },
+        { label: 'Cloudflare DNS 443', host: '1.1.1.1', port: 443 },
+        { label: 'Quad9 DNS 443', host: '9.9.9.9', port: 443 },
+        { label: 'Google HTTPS', host: 'www.google.com', port: 443 },
+        { label: 'Cloudflare HTTPS', host: 'www.cloudflare.com', port: 443 },
+    ];
+
+    for (const t of tests) {
+        const start = performance.now();
+        let ok = false;
+        let ms = 0;
+        try {
+            const controller = new AbortController();
+            const to = setTimeout(() => controller.abort(), 3500);
+            // no-cors + https gives us a real TCP connect + TLS attempt result
+            await fetch(`https://${t.host}`, {
+                mode: 'no-cors',
+                cache: 'no-store',
+                signal: controller.signal
+            });
+            clearTimeout(to);
+            ms = Math.round(performance.now() - start);
+            ok = true;
+            appendResult(`${t.label}: reachable (${ms} ms)`);
+        } catch (e) {
+            ms = Math.round(performance.now() - start);
+            appendResult(`${t.label}: unreachable or blocked (${ms} ms)`);
+        }
+        recordCheck(t.label, ms, ok);
+    }
+
+    appendResult('');
+    appendResult('Custom host/port testing is heavily restricted by the browser.');
+    appendResult('For full port scanning (including gateway ports), use the PowerShell NetworkDoctor tool.');
+}
+
+// === Recent Packet Loss Details (built from real browser attempts) ===
+async function showPacketDetails() {
+    clearAdvancedResults();
+    appendResult('=== Recent Packet Loss Details ===');
+    appendResult('(Real TCP attempts — includes automatic background monitoring + manual checks)');
+    appendResult('');
+
+    // If we have very little history, run a quick burst to give the user immediate value
+    if (recentChecks.length < 6) {
+        appendResult('Insufficient history — running a fresh connectivity burst...');
+        await runConnectivityBurst(12);
+        appendResult('');
+    }
+
+    const recent = recentChecks.slice(-LOSS_SUMMARY_WINDOW);
+    if (recent.length === 0) {
+        appendResult('No connectivity attempts recorded yet. Run Ping or Port Check first.');
+        return;
+    }
+
+    const total = recent.length;
+    const lost = recent.filter(r => !r.ok).length;
+    const lossPct = total > 0 ? ((lost / total) * 100).toFixed(1) : '0.0';
+
+    appendResult(`Summary (last ${total} checks, up to 100): ${lost} lost  →  ${lossPct}% loss`);
+    appendResult('');
+
+    // Show the most recent DETAIL_ROWS in reverse chrono (newest first)
+    const shown = recent.slice(-DETAIL_ROWS).reverse();
+    shown.forEach(r => {
+        const time = new Date(r.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const status = r.ok ? `${r.ms}ms OK` : 'FAIL';
+        appendResult(`${time}  ${r.target.padEnd(22)} ${status}`);
+    });
+
+    appendResult('');
+    appendResult('Note: Real browser TCP attempts (not ICMP). Includes automatic background checks (very infrequent by default in Light mode) when the tab is visible.');
+}
+
+// Helper used by showPacketDetails when history is thin
+async function runConnectivityBurst(count = 8) {
+    const targets = ['8.8.8.8', '1.1.1.1', '9.9.9.9', 'www.google.com'];
+    let done = 0;
+    while (done < count) {
+        for (const host of targets) {
+            if (done >= count) break;
+            const start = performance.now();
+            let ok = false;
+            try {
+                const controller = new AbortController();
+                const to = setTimeout(() => controller.abort(), 3000);
+                await fetch(`https://${host}`, { mode: 'no-cors', cache: 'no-store', signal: controller.signal });
+                clearTimeout(to);
+                ok = true;
+            } catch (_) {}
+            const ms = Math.round(performance.now() - start);
+            recordCheck(host, ms, ok);
+            done++;
+        }
+    }
+}
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
