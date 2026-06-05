@@ -85,12 +85,6 @@ To extend:
   ```
   (We created one with a temp password "changeit123!" for the current .aab - you MUST change it before real use or upload!)
   Store the jks file and passwords securely (never commit to git, backup offline). Update the storePassword and keyPassword in android/app/build.gradle before rebuilding the final .aab.
-- A release keystore (generate one-time with a STRONG unique password, e.g. a long random one):
-  ```
-  keytool -genkey -v -keystore network-doctor-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias networkdoctor
-  ```
-  (We created one with a temp password "changeit123!" for the current .aab - you MUST change it before real use or upload!)
-  Store the jks file and passwords securely (never commit to git, backup offline). Update the storePassword and keyPassword in android/app/build.gradle before rebuilding the final .aab.
 
 ### Build Release AAB
 1. Update `android/app/build.gradle` (the app one) with signing config (see standard Capacitor release docs or copy from your other projects' packages).
