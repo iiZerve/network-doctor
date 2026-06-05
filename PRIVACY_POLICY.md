@@ -13,7 +13,9 @@ The App is designed to perform local network diagnostics on your device. It does
 - The "background monitoring" feature runs network probes at intervals you control (default is very infrequent in "Light" mode) and stores results only locally.
 - No data leaves your device except the standard network requests necessary for the diagnostics you initiate.
 
-We do not use cookies, analytics, advertising SDKs, or any third-party services that track you.
+The app's user interface is built with standard web technologies and loads its rendering libraries (Tailwind CSS, Chart.js, and Font Awesome icons) from public Content Delivery Networks (CDNs) on first launch. These requests are made solely to fetch UI assets and contain no diagnostic data, user identifiers, or personal information. No analytics, tracking pixels, or third-party advertising SDKs are used.
+
+We do not use cookies for tracking, analytics, advertising SDKs, or any third-party services that track you beyond the minimal CDN requests for UI framework files.
 
 ## Log Data
 
