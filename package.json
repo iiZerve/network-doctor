@@ -7,8 +7,8 @@
     "cap": "npx cap",
     "sync": "npx cap sync",
     "prepare:web": "node -e \"require('fs').copyFileSync('index.html','www/index.html')\"",
-    "build:android:debug": "npm run prepare:web && npx cap sync android && cd android && .\\gradlew.bat assembleDebug",
-    "build:android:release": "npm run prepare:web && npx cap sync android && cd android && .\\gradlew.bat bundleRelease",
+    "build:android:debug": "node scripts/build-android.js debug",
+    "build:android:release": "node scripts/build-android.js release",
     "open:android": "npx cap open android",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
