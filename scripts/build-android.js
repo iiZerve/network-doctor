@@ -75,10 +75,15 @@ function discoverJavaHomes() {
     addCandidate(candidates, 'C:\\Program Files\\Microsoft\\jdk-17', seen);
     addCandidate(candidates, 'C:\\Program Files\\Java\\jdk-17', seen);
     addCandidate(candidates, 'C:\\Program Files\\Zulu\\zulu-17', seen);
+    addCandidate(candidates, 'C:\\Program Files\\Android\\Android Studio\\jbr', seen);
+    addCandidate(candidates, 'C:\\Program Files\\Android\\Android Studio\\jre', seen);
+    addCandidate(candidates, 'C:\\Program Files\\JetBrains\\Android Studio\\jbr', seen);
     addHomesFromBase(candidates, 'C:\\Program Files\\Eclipse Adoptium', seen);
     addHomesFromBase(candidates, 'C:\\Program Files\\Microsoft', seen);
     addHomesFromBase(candidates, 'C:\\Program Files\\Java', seen);
     addHomesFromBase(candidates, 'C:\\Program Files\\Zulu', seen);
+    addHomesFromBase(candidates, 'C:\\Program Files\\Android', seen);
+    addHomesFromBase(candidates, 'C:\\Program Files\\JetBrains', seen);
     addHomesFromBase(candidates, 'C:\\Android', seen);
   } else {
     addCandidate(candidates, '/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home', seen);
