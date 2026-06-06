@@ -15,7 +15,7 @@ const MAX_JAVA_MAJOR = 22;
 
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
-    cwd: root,
+    cwd: options.cwd || root,
     stdio: 'inherit',
     env: options.env || process.env,
     shell: false,
@@ -148,7 +148,7 @@ function main() {
 
   run(npmCmd, ['run', 'prepare:web'], { env });
   run(npxCmd, ['cap', 'sync', 'android'], { env });
-  run(isWin ? 'cmd.exe' : gradlew, isWin ? ['/c', 'cd', '/d', 'android', '&&', gradlew, gradleTask] : [gradleTask], { env });
+  run(gradlew, [gradleTask], { env, cwd: path.join(root, 'android') });
 
   console.log('Android build completed successfully.');
 }
