@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Network Doctor</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
       --bg: #09090b;
@@ -174,6 +175,7 @@
         <div>
           <h2 class="title">Speed Test</h2>
           <div class="small">Press the button to run a Cloudflare-backed speed test. No real-time throughput reporting.</div>
+          <div id="file-warning" class="speed-note" style="display:none; margin-top:10px;">This preview may block some network requests; the packaged Android app is the best test target.</div>
         </div>
         <div class="controls">
           <button id="start-speed-test-btn" class="primary" type="button">Start Speed Test</button>
@@ -299,6 +301,7 @@
     }
 
     function ensureChart(id, color, label) {
+      if (typeof Chart === 'undefined') return null;
       const canvas = el(id);
       if (!canvas) return null;
       return new Chart(canvas, {
@@ -338,10 +341,14 @@
     }
 
     function initCharts() {
-      state.charts.download = ensureChart('dlChart', '#34d399', 'Mbps');
-      state.charts.upload = ensureChart('ulChart', '#c084fc', 'Mbps');
-      state.charts.latency = ensureChart('latChart', '#22d3ee', 'ms');
-      syncCharts();
+      try {
+        state.charts.download = ensureChart('dlChart', '#34d399', 'Mbps');
+        state.charts.upload = ensureChart('ulChart', '#c084fc', 'Mbps');
+        state.charts.latency = ensureChart('latChart', '#22d3ee', 'ms');
+        syncCharts();
+      } catch (error) {
+        console.warn('Chart initialization skipped:', error);
+      }
     }
 
     function syncCharts() {
@@ -681,7 +688,6 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      initCharts();
       const speedBtn = el('start-speed-test-btn');
       const clearBtn = el('clear-results-btn');
       const copyBtn = el('copy-results-btn');
@@ -689,6 +695,7 @@
       const nslookupBtn = el('nslookup-btn');
       const ipconfigBtn = el('ipconfig-btn');
       const exportBtn = el('export-report-btn');
+
       if (speedBtn) speedBtn.addEventListener('click', runSpeedTest);
       if (clearBtn) clearBtn.addEventListener('click', clearResults);
       if (copyBtn) copyBtn.addEventListener('click', copyResults);
@@ -696,9 +703,16 @@
       if (nslookupBtn) nslookupBtn.addEventListener('click', runNSLookup);
       if (ipconfigBtn) ipconfigBtn.addEventListener('click', runIPConfig);
       if (exportBtn) exportBtn.addEventListener('click', exportReport);
+
+      initCharts();
       setStatus('Idle');
       updateHistory();
       logLine('App ready');
+      if (typeof Chart === 'undefined') {
+        logLine('Chart.js unavailable; charts are disabled but diagnostic buttons remain active');
+        const warn = el('file-warning');
+        if (warn) warn.style.display = 'block';
+      }
     });
   </script>
 </body>
