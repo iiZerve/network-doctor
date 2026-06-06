@@ -7,198 +7,66 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --bg: #09090b;
-      --panel: #18181b;
-      --border: #27272a;
-      --text: #e4e4e7;
-      --muted: #a1a1aa;
-      --green: #34d399;
-      --cyan: #22d3ee;
-      --purple: #c084fc;
-      --shadow: 0 20px 45px rgba(0,0,0,0.28);
+      --bg:#09090b; --panel:#18181b; --border:#27272a; --text:#e4e4e7; --muted:#a1a1aa;
+      --green:#34d399; --cyan:#22d3ee; --purple:#c084fc; --shadow:0 20px 45px rgba(0,0,0,.28);
     }
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      margin: 0;
-      color: var(--text);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background: radial-gradient(circle at top, rgba(30,41,59,.9) 0%, rgba(9,9,11,1) 52%), var(--bg);
-    }
-    button, textarea, pre, select, input, .card {
-      border: 1px solid var(--border);
-      border-radius: 18px;
-    }
-    .app { max-width: 1200px; margin: 0 auto; padding: 24px; display: grid; gap: 18px; }
-    .topbar, .card, .metric {
-      background: rgba(24, 24, 27, 0.96);
-      box-shadow: var(--shadow);
-    }
-    .topbar {
-      display: flex; align-items: center; justify-content: space-between; gap: 16px;
-      padding: 18px 20px; flex-wrap: wrap;
-    }
-    .brand { display: flex; align-items: center; gap: 14px; }
-    .logo {
-      width: 54px; height: 54px; border-radius: 18px; display: grid; place-items: center;
-      color: white; font-weight: 800; letter-spacing: 0.04em;
-      background: linear-gradient(135deg, #2563eb, #0ea5e9);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
-    }
-    h1 { margin: 0; font-size: 2rem; }
-    .subtitle { margin-top: 4px; color: var(--muted); font-size: .9rem; }
-    .badge {
-      display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px;
-      font-size: 12px; color: #67e8f9; background: rgba(8,47,73,.65);
-      border: 1px solid rgba(34,211,238,.25);
-    }
-    .metrics { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 14px; }
-    .metric { padding: 16px; min-height: 106px; }
-    .metric .label { color: var(--muted); font-size: 12px; letter-spacing: .08em; }
-    .metric .value { margin-top: 10px; font-size: 28px; line-height: 1.1; font-weight: 700; font-variant-numeric: tabular-nums; }
-    .metric .hint { margin-top: 4px; color: var(--muted); font-size: 12px; }
-    .card { padding: 18px; }
-    .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-    .title { margin: 0 0 6px; font-size: 18px; }
-    .small { font-size: 12px; color: var(--muted); }
-    .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    button {
-      background: #27272a; color: var(--text); padding: 11px 16px; font-size: 14px; cursor: pointer;
-    }
-    button:hover { background: #3f3f46; }
-    button.primary { background: linear-gradient(135deg, #0ea5e9, #2563eb); border-color: rgba(14,165,233,.6); font-weight: 700; }
-    button:disabled { opacity: .6; cursor: not-allowed; }
-    textarea, pre {
-      width: 100%; background: #09090b; color: var(--text); padding: 14px; font: inherit; margin: 0;
-    }
-    textarea { min-height: 150px; resize: vertical; }
-    pre { min-height: 104px; white-space: pre-wrap; }
-    .grid-2 { display: grid; grid-template-columns: 1.1fr .9fr; gap: 12px; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
-    .diag-buttons { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-bottom: 12px; }
-    .history { display: grid; gap: 8px; }
-    .history-item { padding: 10px 12px; border: 1px solid var(--border); border-radius: 14px; background: #111827; font-size: 13px; color: var(--text); }
-    .history-item.muted { color: var(--muted); }
-    .chart-wrap {
-      border: 1px solid var(--border); border-radius: 18px; background: #09090b; overflow: hidden; height: 170px; padding: 10px;
-    }
-    .chart-wrap canvas { width: 100% !important; height: 100% !important; }
-    .speed-note {
-      padding: 10px 12px; border: 1px solid rgba(34, 211, 238, .15); border-radius: 14px;
-      background: rgba(8,47,73,.35); color: #bae6fd; font-size: 12px;
-    }
-    .status { font-size: 13px; color: #67e8f9; }
-    .status.ok { color: #86efac; }
-    .status.error { color: #fca5a5; }
-    .status.warn { color: #fcd34d; }
-    @media (max-width: 980px) {
-      .metrics, .grid-2, .grid-3, .diag-buttons { grid-template-columns: 1fr; }
-      h1 { font-size: 1.7rem; }
-    }
+    *{box-sizing:border-box} html,body{height:100%} body{margin:0;color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:radial-gradient(circle at top,rgba(30,41,59,.9) 0%,rgba(9,9,11,1) 52%),var(--bg)}
+    button,textarea,pre,.card,.metric{border:1px solid var(--border);border-radius:18px}
+    .app{max-width:1200px;margin:0 auto;padding:24px;display:grid;gap:18px}
+    .topbar,.card,.metric{background:rgba(24,24,27,.96);box-shadow:var(--shadow)}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 20px;flex-wrap:wrap}
+    .brand{display:flex;align-items:center;gap:14px}.logo{width:54px;height:54px;border-radius:18px;display:grid;place-items:center;color:#fff;font-weight:800;letter-spacing:.04em;background:linear-gradient(135deg,#2563eb,#0ea5e9);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+    h1{margin:0;font-size:2rem}.subtitle{margin-top:4px;color:var(--muted);font-size:.9rem}.badge{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;font-size:12px;color:#67e8f9;background:rgba(8,47,73,.65);border:1px solid rgba(34,211,238,.25)}
+    .metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}.metric{padding:16px;min-height:106px}.metric .label{color:var(--muted);font-size:12px;letter-spacing:.08em}.metric .value{margin-top:10px;font-size:28px;line-height:1.1;font-weight:700;font-variant-numeric:tabular-nums}.metric .hint{margin-top:4px;color:var(--muted);font-size:12px}
+    .card{padding:18px}.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.title{margin:0 0 6px;font-size:18px}.small{font-size:12px;color:var(--muted)}.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    button{background:#27272a;color:var(--text);padding:11px 16px;font-size:14px;cursor:pointer} button:hover{background:#3f3f46} button.primary{background:linear-gradient(135deg,#0ea5e9,#2563eb);border-color:rgba(14,165,233,.6);font-weight:700} button:disabled{opacity:.6;cursor:not-allowed}
+    textarea,pre{width:100%;background:#09090b;color:var(--text);padding:14px;font:inherit;margin:0} textarea{min-height:150px;resize:vertical} pre{min-height:104px;white-space:pre-wrap}
+    .grid-2{display:grid;grid-template-columns:1.1fr .9fr;gap:12px}.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.diag-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}.history{display:grid;gap:8px}.history-item{padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:#111827;font-size:13px;color:var(--text)}.history-item.muted{color:var(--muted)}
+    .chart-wrap{border:1px solid var(--border);border-radius:18px;background:#09090b;overflow:hidden;height:170px;padding:10px}.chart-wrap canvas{width:100%!important;height:100%!important}
+    .note{padding:10px 12px;border:1px solid rgba(34,211,238,.15);border-radius:14px;background:rgba(8,47,73,.35);color:#bae6fd;font-size:12px}.status{font-size:13px;color:#67e8f9}.status.ok{color:#86efac}.status.error{color:#fca5a5}.status.warn{color:#fcd34d}
+    @media (max-width:980px){.metrics,.grid-2,.grid-3,.diag-buttons{grid-template-columns:1fr} h1{font-size:1.7rem}}
   </style>
 </head>
 <body>
   <div class="app">
     <header class="topbar">
-      <div class="brand">
-        <div class="logo">ND</div>
-        <div>
-          <h1>Network Doctor</h1>
-          <div class="subtitle">Advanced local network diagnostics</div>
-        </div>
-      </div>
+      <div class="brand"><div class="logo">ND</div><div><h1>Network Doctor</h1><div class="subtitle">Advanced local network diagnostics</div></div></div>
     </header>
 
     <section class="metrics">
-      <div class="metric">
-        <div class="label">STATUS</div>
-        <div class="value" id="status">Idle</div>
-        <div class="hint" id="status-hint">Ready to start a speed test</div>
-      </div>
-      <div class="metric">
-        <div class="label">LATENCY</div>
-        <div class="value" id="latency">-- ms</div>
-        <div class="hint">Cloudflare unloaded latency</div>
-      </div>
-      <div class="metric">
-        <div class="label">DOWNLOAD</div>
-        <div class="value" id="download">-- Mbps</div>
-        <div class="hint">Cloudflare throughput</div>
-      </div>
-      <div class="metric">
-        <div class="label">UPLOAD</div>
-        <div class="value" id="upload">-- Mbps</div>
-        <div class="hint">Cloudflare throughput</div>
-      </div>
-      <div class="metric">
-        <div class="label">LAST RUN</div>
-        <div class="value" id="last-run">--</div>
-        <div class="hint">On-demand only</div>
-      </div>
+      <div class="metric"><div class="label">STATUS</div><div class="value" id="status">Idle</div><div class="hint" id="status-hint">Ready to start a speed test</div></div>
+      <div class="metric"><div class="label">LATENCY</div><div class="value" id="latency">-- ms</div><div class="hint">Cloudflare unloaded latency</div></div>
+      <div class="metric"><div class="label">DOWNLOAD</div><div class="value" id="download">-- Mbps</div><div class="hint">Cloudflare throughput</div></div>
+      <div class="metric"><div class="label">UPLOAD</div><div class="value" id="upload">-- Mbps</div><div class="hint">Cloudflare throughput</div></div>
+      <div class="metric"><div class="label">LAST RUN</div><div class="value" id="last-run">--</div><div class="hint">On-demand only</div></div>
     </section>
 
     <section class="card">
-      <div class="row" style="margin-bottom: 12px;">
-        <div>
-          <h2 class="title">Performance Over Time</h2>
-          <div class="small">Charts update after each speed test run. Download and upload values come from Cloudflare endpoints directly.</div>
-        </div>
+      <div class="row" style="margin-bottom:12px;">
+        <div><h2 class="title">Performance Over Time</h2><div class="small">Charts update after each speed test run. Download and upload values come from Cloudflare endpoints directly.</div></div>
         <div class="badge">On demand</div>
       </div>
       <div class="grid-3">
-        <div>
-          <div class="row" style="margin-bottom: 8px;">
-            <div><span style="color: var(--green); font-weight: 600;">Download</span></div>
-            <div class="small" id="dl-val">-- Mbps</div>
-          </div>
-          <div class="chart-wrap"><canvas id="dlChart"></canvas></div>
-        </div>
-        <div>
-          <div class="row" style="margin-bottom: 8px;">
-            <div><span style="color: var(--purple); font-weight: 600;">Upload</span></div>
-            <div class="small" id="ul-val">-- Mbps</div>
-          </div>
-          <div class="chart-wrap"><canvas id="ulChart"></canvas></div>
-        </div>
-        <div>
-          <div class="row" style="margin-bottom: 8px;">
-            <div><span style="color: var(--cyan); font-weight: 600;">Latency</span></div>
-            <div class="small" id="lat-val">-- ms</div>
-          </div>
-          <div class="chart-wrap"><canvas id="latChart"></canvas></div>
-        </div>
+        <div><div class="row" style="margin-bottom:8px;"><div><span style="color:var(--green);font-weight:600;">Download</span></div><div class="small" id="dl-val">-- Mbps</div></div><div class="chart-wrap"><canvas id="dlChart"></canvas></div></div>
+        <div><div class="row" style="margin-bottom:8px;"><div><span style="color:var(--purple);font-weight:600;">Upload</span></div><div class="small" id="ul-val">-- Mbps</div></div><div class="chart-wrap"><canvas id="ulChart"></canvas></div></div>
+        <div><div class="row" style="margin-bottom:8px;"><div><span style="color:var(--cyan);font-weight:600;">Latency</span></div><div class="small" id="lat-val">-- ms</div></div><div class="chart-wrap"><canvas id="latChart"></canvas></div></div>
       </div>
     </section>
 
     <section class="card">
-      <div class="row" style="margin-bottom: 12px;">
-        <div>
-          <h2 class="title">Speed Test</h2>
-          <div class="small">Press the button to run a Cloudflare-backed speed test. No real-time throughput reporting.</div>
-          <div id="file-warning" class="speed-note" style="display:none; margin-top:10px;">This preview may block some network requests; the packaged Android app is the best test target.</div>
-        </div>
-        <div class="controls">
-          <button id="start-speed-test-btn" class="primary" type="button">Start Speed Test</button>
-          <button id="clear-results-btn" type="button">Clear Results</button>
-        </div>
+      <div class="row" style="margin-bottom:12px;">
+        <div><h2 class="title">Speed Test</h2><div class="small">Press the button to run a Cloudflare-backed speed test. Progress is shown while it runs.</div><div id="file-warning" class="note" style="display:none;margin-top:10px;">This preview may block some network requests; the packaged Android app is the best test target.</div></div>
+        <div class="controls"><button id="start-speed-test-btn" class="primary" type="button">Start Speed Test</button><button id="clear-results-btn" type="button">Clear Results</button></div>
       </div>
       <div class="grid-2">
         <pre id="speed-test-summary">No speed test run yet.</pre>
-        <div>
-          <div class="small" style="margin-bottom: 8px;">Recent speed test history</div>
-          <div id="history-list" class="history">
-            <div class="history-item muted">No runs yet.</div>
-          </div>
-        </div>
+        <div><div class="small" style="margin-bottom:8px;">Recent speed test history</div><div id="history-list" class="history"><div class="history-item muted">No runs yet.</div></div></div>
       </div>
     </section>
 
     <section class="card">
-      <div class="row" style="margin-bottom: 12px;">
-        <div>
-          <h2 class="title">Diagnostic Tools</h2>
-          <div class="small">Manual checks only.</div>
-        </div>
+      <div class="row" style="margin-bottom:12px;">
+        <div><h2 class="title">Diagnostic Tools</h2><div class="small">Manual checks only.</div></div>
         <button id="copy-results-btn" type="button">Copy Results</button>
       </div>
       <div class="diag-buttons">
@@ -210,305 +78,63 @@
     </section>
 
     <section class="card">
-      <div class="row" style="margin-bottom: 12px;">
-        <div>
-          <h2 class="title">Activity Log</h2>
-          <div class="small">Logs appear when you run a speed test or diagnostic.</div>
-        </div>
+      <div class="row" style="margin-bottom:12px;">
+        <div><h2 class="title">Activity Log</h2><div class="small">Logs appear when you run a speed test or diagnostic.</div></div>
         <button id="export-report-btn" type="button">Export Full Report</button>
       </div>
-      <div id="log" style="display:grid; gap:8px;"></div>
+      <div id="log" style="display:grid;gap:8px;"></div>
     </section>
   </div>
 
   <script>
     const CF_BASE = 'https://speed.cloudflare.com';
-    const DOWNLOAD_SIZES = [1e5, 1e6, 1e7, 2.5e7, 1e8];
-    const UPLOAD_SIZES = [1e5, 1e6, 1e7, 2.5e7, 5e7];
-    const LATENCY_SAMPLES = 12;
-
-    const state = {
-      running: false,
-      history: [],
-      graphs: {
-        labels: [],
-        download: [],
-        upload: [],
-        latency: []
-      },
-      charts: {}
-    };
-
+    const DOWNLOAD_SIZES = [1e5, 1e6, 1e7];
+    const UPLOAD_SIZES = [1e5, 1e6, 1e7];
+    const LATENCY_SAMPLES = 4;
+    const state = { running:false, history:[], graphs:{labels:[],download:[],upload:[],latency:[]}, charts:{}, currentRun:null };
     const el = id => document.getElementById(id);
     const isFileOrigin = location.protocol === 'file:' || location.origin === 'null';
 
-    function safeText(id, text) {
-      const node = el(id);
-      if (node) node.textContent = text;
-    }
+    function safeText(id, text){ const node = el(id); if (node) node.textContent = text; }
+    function timeStamp(){ return new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' }); }
+    function logLine(message){ const log = el('log'); if (!log) return; const row = document.createElement('div'); row.className = 'history-item'; row.textContent = '[' + timeStamp() + '] ' + message; log.prepend(row); }
+    function appendResult(text){ const box = el('results-box'); if (!box) return; box.value = box.value ? box.value + '\n' + text : text; }
+    function clearResults(){ const box = el('results-box'); if (box) box.value = ''; const summary = el('speed-test-summary'); if (summary) summary.textContent = 'No speed test run yet.'; }
+    function setStatus(value, kind){ safeText('status', value); const status = el('status'); if (status) status.className = 'value' + (kind ? ' ' + kind : ''); const hint = el('status-hint'); if (hint) { if (value === 'Running') hint.textContent = 'Testing Cloudflare edge network...'; else if (value === 'Complete') hint.textContent = 'Speed test completed'; else if (value === 'Failed') hint.textContent = 'Speed test did not complete'; else hint.textContent = 'Ready to start a speed test'; } }
+    function setSpeedPhase(phase, detail){ const summary = el('speed-test-summary'); if (summary) summary.textContent = 'Speed test running...\nPhase: ' + phase + (detail ? '\n' + detail : ''); logLine('Speed test phase: ' + phase + (detail ? ' — ' + detail : '')); }
+    function setTestingValues(){ safeText('latency', 'Testing...'); safeText('download', 'Testing...'); safeText('upload', 'Testing...'); }
+    function cacheBust(url){ return url + (url.includes('?') ? '&' : '?') + 'cb=' + Date.now() + '-' + Math.random().toString(36).slice(2); }
+    function percentile(values, p = 0.9){ if (!values.length) return null; const sorted = values.slice().sort((a,b)=>a-b); const idx = (sorted.length - 1) * p; const lo = Math.floor(idx); const hi = Math.ceil(idx); if (lo === hi) return sorted[lo]; return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo); }
+    function median(values){ return percentile(values, 0.5); }
 
-    function timeStamp() {
-      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    }
-
-    function logLine(message) {
-      const log = el('log');
-      if (!log) return;
-      const row = document.createElement('div');
-      row.className = 'history-item';
-      row.textContent = '[' + timeStamp() + '] ' + message;
-      log.prepend(row);
-    }
-
-    function appendResult(text) {
-      const box = el('results-box');
-      if (!box) return;
-      box.value = box.value ? box.value + '\n' + text : text;
-    }
-
-    function clearResults() {
-      const box = el('results-box');
-      if (box) box.value = '';
-      const summary = el('speed-test-summary');
-      if (summary) summary.textContent = 'No speed test run yet.';
-    }
-
-    function setStatus(value, kind) {
-      safeText('status', value);
-      const status = el('status');
-      if (status) status.className = 'value' + (kind ? ' ' + kind : '');
-      const hint = el('status-hint');
-      if (hint) {
-        if (value === 'Running') hint.textContent = 'Testing Cloudflare edge network...';
-        else if (value === 'Complete') hint.textContent = 'Speed test completed';
-        else if (value === 'Failed') hint.textContent = 'Speed test did not complete';
-        else hint.textContent = 'Ready to start a speed test';
-      }
-    }
-
-    function percentile(values, p = 0.9) {
-      if (!values.length) return null;
-      const sorted = values.slice().sort((a, b) => a - b);
-      const idx = (sorted.length - 1) * p;
-      const lo = Math.floor(idx);
-      const hi = Math.ceil(idx);
-      if (lo === hi) return sorted[lo];
-      return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
-    }
-
-    function median(values) {
-      return percentile(values, 0.5);
-    }
-
-    function ensureChart(id, color, label) {
-      if (typeof Chart === 'undefined') return null;
-      const canvas = el(id);
-      if (!canvas) return null;
-      return new Chart(canvas, {
-        type: 'line',
-        data: {
-          labels: state.graphs.labels,
-          datasets: [{
-            data: [],
-            borderColor: color,
-            borderWidth: 2,
-            tension: 0.18,
-            pointRadius: 3,
-            pointHoverRadius: 4,
-            fill: false
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: { duration: 180 },
-          plugins: { legend: { display: false } },
-          scales: {
-            x: {
-              grid: { color: 'rgba(255,255,255,0.08)' },
-              ticks: { color: '#a1a1aa', font: { size: 10 } },
-              title: { display: true, text: 'Run', color: '#a1a1aa', font: { size: 10 } }
-            },
-            y: {
-              grid: { color: 'rgba(255,255,255,0.08)' },
-              ticks: { color: '#a1a1aa', font: { size: 9 } },
-              title: { display: true, text: label, color: '#a1a1aa', font: { size: 10 } },
-              grace: '10%'
-            }
-          }
-        }
-      });
-    }
-
-    function initCharts() {
+    function ensureChart(id, color, label){ if (typeof Chart === 'undefined') return null; const canvas = el(id); if (!canvas) return null; return new Chart(canvas, { type:'line', data:{ labels: state.graphs.labels, datasets:[{ data:[], borderColor:color, borderWidth:2, tension:0.18, pointRadius:3, pointHoverRadius:4, fill:false }] }, options:{ responsive:true, maintainAspectRatio:false, animation:{ duration:180 }, plugins:{ legend:{ display:false } }, scales:{ x:{ grid:{ color:'rgba(255,255,255,0.08)' }, ticks:{ color:'#a1a1aa', font:{ size:10 } }, title:{ display:true, text:'Run', color:'#a1a1aa', font:{ size:10 } } }, y:{ grid:{ color:'rgba(255,255,255,0.08)' }, ticks:{ color:'#a1a1aa', font:{ size:9 } }, title:{ display:true, text:label, color:'#a1a1aa', font:{ size:10 } }, grace:'10%' } } } }); }
+    function initCharts(){ try { state.charts.download = ensureChart('dlChart', '#34d399', 'Mbps'); state.charts.upload = ensureChart('ulChart', '#c084fc', 'Mbps'); state.charts.latency = ensureChart('latChart', '#22d3ee', 'ms'); syncCharts(); } catch (error) { console.warn('Chart initialization skipped:', error); } }
+    function syncCharts(){ if (state.charts.download) { state.charts.download.data.labels = state.graphs.labels; state.charts.download.data.datasets[0].data = state.graphs.download; state.charts.download.update('none'); } if (state.charts.upload) { state.charts.upload.data.labels = state.graphs.labels; state.charts.upload.data.datasets[0].data = state.graphs.upload; state.charts.upload.update('none'); } if (state.charts.latency) { state.charts.latency.data.labels = state.graphs.labels; state.charts.latency.data.datasets[0].data = state.graphs.latency; state.charts.latency.update('none'); } const lastDownload = state.graphs.download[state.graphs.download.length - 1]; const lastUpload = state.graphs.upload[state.graphs.upload.length - 1]; const lastLatency = state.graphs.latency[state.graphs.latency.length - 1]; if (lastDownload != null) safeText('dl-val', lastDownload.toFixed(1) + ' Mbps'); if (lastUpload != null) safeText('ul-val', lastUpload.toFixed(1) + ' Mbps'); if (lastLatency != null) safeText('lat-val', lastLatency.toFixed(1) + ' ms'); }
+    function addGraphPoint(downloadMbps, uploadMbps, latencyMs){ const label = timeStamp(); state.graphs.labels.push(label); state.graphs.download.push(downloadMbps); state.graphs.upload.push(uploadMbps); state.graphs.latency.push(latencyMs); while (state.graphs.labels.length > 12) state.graphs.labels.shift(); while (state.graphs.download.length > 12) state.graphs.download.shift(); while (state.graphs.upload.length > 12) state.graphs.upload.shift(); while (state.graphs.latency.length > 12) state.graphs.latency.shift(); syncCharts(); }
+    function updateHistory(entry){ if (!entry || !entry.when) return; state.history.unshift(entry); state.history = state.history.slice(0, 5); const list = el('history-list'); if (!list) return; list.innerHTML = ''; if (!state.history.length) { const empty = document.createElement('div'); empty.className = 'history-item muted'; empty.textContent = 'No runs yet.'; list.appendChild(empty); return; } state.history.forEach(item => { if (!item) return; const row = document.createElement('div'); row.className = 'history-item'; row.textContent = item.when + ' • ' + item.download + ' down • ' + item.upload + ' up • ' + item.latency + ' latency'; list.appendChild(row); }); }
+    async function readResponseBody(response){ if (!response) return null; if (response.body && response.body.getReader) { const reader = response.body.getReader(); let total = 0; while (true) { const { done, value } = await reader.read(); if (done) break; if (value) total += value.byteLength; } return total; } const buf = await response.arrayBuffer(); return buf.byteLength; }
+    async function timedFetch(url, opts = {}){ const started = performance.now(); const response = await fetch(cacheBust(url), { cache:'no-store', credentials:'omit', ...opts }); if (!response.ok) throw new Error('HTTP ' + response.status); const bytesRead = await readResponseBody(response); const ms = performance.now() - started; return { ms, bytesRead, response }; }
+    async function measureLatency(){ const samples = []; for (let i = 0; i < LATENCY_SAMPLES; i++) { const result = await timedFetch(CF_BASE + '/__down?bytes=0'); samples.push(result.ms); } return samples.length ? median(samples) : null; }
+    async function measureBandwidth(direction){ const sizes = direction === 'download' ? DOWNLOAD_SIZES : UPLOAD_SIZES; const samples = []; for (const size of sizes) { const count = size < 1e7 ? 2 : 1; for (let i = 0; i < count; i++) { const url = direction === 'download' ? CF_BASE + '/__down?bytes=' + size : CF_BASE + '/__up?bytes=' + size; const opts = direction === 'upload' ? { method:'POST', body:'0'.repeat(size) } : {}; const result = await timedFetch(url, opts); const bytes = size * 1.005; const mbps = (bytes * 8) / (result.ms / 1000) / 1_000_000; samples.push(mbps); } } return samples.length ? percentile(samples, 0.9) : null; }
+    async function runSpeedTest(){ if (state.running) return; state.running = true; const btn = el('start-speed-test-btn'); if (btn) btn.disabled = true; setStatus('Running', 'ok'); safeText('last-run', 'Running...'); clearResults(); setTestingValues(); setSpeedPhase('starting', 'Preparing Cloudflare measurements'); appendResult('=== Speed Test ==='); appendResult('Measuring Cloudflare edge network directly...'); if (isFileOrigin) { const warn = el('file-warning'); if (warn) warn.style.display = 'block'; }
       try {
-        state.charts.download = ensureChart('dlChart', '#34d399', 'Mbps');
-        state.charts.upload = ensureChart('ulChart', '#c084fc', 'Mbps');
-        state.charts.latency = ensureChart('latChart', '#22d3ee', 'ms');
-        syncCharts();
-      } catch (error) {
-        console.warn('Chart initialization skipped:', error);
-      }
-    }
-
-    function syncCharts() {
-      if (state.charts.download) {
-        state.charts.download.data.labels = state.graphs.labels;
-        state.charts.download.data.datasets[0].data = state.graphs.download;
-        state.charts.download.update('none');
-      }
-      if (state.charts.upload) {
-        state.charts.upload.data.labels = state.graphs.labels;
-        state.charts.upload.data.datasets[0].data = state.graphs.upload;
-        state.charts.upload.update('none');
-      }
-      if (state.charts.latency) {
-        state.charts.latency.data.labels = state.graphs.labels;
-        state.charts.latency.data.datasets[0].data = state.graphs.latency;
-        state.charts.latency.update('none');
-      }
-      const lastDownload = state.graphs.download[state.graphs.download.length - 1];
-      const lastUpload = state.graphs.upload[state.graphs.upload.length - 1];
-      const lastLatency = state.graphs.latency[state.graphs.latency.length - 1];
-      if (lastDownload != null) safeText('dl-val', lastDownload.toFixed(1) + ' Mbps');
-      if (lastUpload != null) safeText('ul-val', lastUpload.toFixed(1) + ' Mbps');
-      if (lastLatency != null) safeText('lat-val', lastLatency.toFixed(1) + ' ms');
-    }
-
-    function addGraphPoint(downloadMbps, uploadMbps, latencyMs) {
-      const label = timeStamp();
-      state.graphs.labels.push(label);
-      state.graphs.download.push(downloadMbps);
-      state.graphs.upload.push(uploadMbps);
-      state.graphs.latency.push(latencyMs);
-      while (state.graphs.labels.length > 12) state.graphs.labels.shift();
-      while (state.graphs.download.length > 12) state.graphs.download.shift();
-      while (state.graphs.upload.length > 12) state.graphs.upload.shift();
-      while (state.graphs.latency.length > 12) state.graphs.latency.shift();
-      syncCharts();
-    }
-
-    function updateHistory(entry) {
-      if (!entry || !entry.when) return;
-      state.history.unshift(entry);
-      state.history = state.history.slice(0, 5);
-      const list = el('history-list');
-      if (!list) return;
-      list.innerHTML = '';
-      if (!state.history.length) {
-        const empty = document.createElement('div');
-        empty.className = 'history-item muted';
-        empty.textContent = 'No runs yet.';
-        list.appendChild(empty);
-        return;
-      }
-      state.history.forEach(item => {
-        if (!item) return;
-        const row = document.createElement('div');
-        row.className = 'history-item';
-        row.textContent = item.when + ' • ' + item.download + ' down • ' + item.upload + ' up • ' + item.latency + ' latency';
-        list.appendChild(row);
-      });
-    }
-
-    function cacheBust(url) {
-      return url + (url.includes('?') ? '&' : '?') + 'cb=' + Date.now() + '-' + Math.random().toString(36).slice(2);
-    }
-
-    async function timedNoCorsFetch(url, { method = 'GET', body = undefined, timeoutMs = 20000 } = {}) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
-      const started = performance.now();
-      try {
-        await fetch(cacheBust(url), {
-          mode: 'no-cors',
-          cache: 'no-store',
-          credentials: 'omit',
-          method,
-          body,
-          signal: controller.signal
-        });
-        return { ok: true, ms: performance.now() - started };
-      } catch (error) {
-        return { ok: false, ms: performance.now() - started, error };
-      } finally {
-        clearTimeout(timer);
-      }
-    }
-
-    async function measureLatency() {
-      const samples = [];
-      for (let i = 0; i < LATENCY_SAMPLES; i++) {
-        const result = await timedNoCorsFetch(CF_BASE + '/__down?bytes=0', { timeoutMs: 10000 });
-        if (result.ok) samples.push(result.ms);
-      }
-      return samples.length ? median(samples) : null;
-    }
-
-    async function measureBandwidth(direction) {
-      const sizes = direction === 'download' ? DOWNLOAD_SIZES : UPLOAD_SIZES;
-      const samples = [];
-      for (const size of sizes) {
-        const count = size < 1e7 ? 3 : 2;
-        for (let i = 0; i < count; i++) {
-          const url = direction === 'download' ? CF_BASE + '/__down?bytes=' + size : CF_BASE + '/__up?bytes=' + size;
-          const body = direction === 'upload' ? '0'.repeat(size) : undefined;
-          const result = await timedNoCorsFetch(url, {
-            method: direction === 'upload' ? 'POST' : 'GET',
-            body,
-            timeoutMs: direction === 'download' ? 20000 : 25000
-          });
-          if (result.ok && result.ms > 0) {
-            const bytes = size * 1.005;
-            const mbps = (bytes * 8) / (result.ms / 1000) / 1_000_000;
-            samples.push(mbps);
-          }
-        }
-      }
-      return samples.length ? percentile(samples, 0.9) : null;
-    }
-
-    async function runSpeedTest() {
-      if (state.running) return;
-      state.running = true;
-      const btn = el('start-speed-test-btn');
-      if (btn) btn.disabled = true;
-      setStatus('Running', 'ok');
-      safeText('last-run', 'Running...');
-      clearResults();
-      logLine('Starting Cloudflare-backed speed test');
-      appendResult('=== Speed Test ===');
-      appendResult('Measuring Cloudflare edge network directly...');
-
-      try {
+        setSpeedPhase('latency', 'Measuring unloaded latency');
         const latencyMs = await measureLatency();
-        const downloadMbps = await measureBandwidth('download');
-        const uploadMbps = await measureBandwidth('upload');
-
-        if (latencyMs == null || downloadMbps == null || uploadMbps == null) {
-          throw new Error('Unable to collect all Cloudflare measurements');
-        }
-
-        safeText('download', downloadMbps.toFixed(1) + ' Mbps');
-        safeText('upload', uploadMbps.toFixed(1) + ' Mbps');
         safeText('latency', latencyMs.toFixed(1) + ' ms');
+        appendResult('Latency: ' + latencyMs.toFixed(1) + ' ms');
+        setSpeedPhase('download', 'Measuring download throughput');
+        const downloadMbps = await measureBandwidth('download');
+        safeText('download', downloadMbps.toFixed(1) + ' Mbps');
+        appendResult('Download: ' + downloadMbps.toFixed(1) + ' Mbps');
+        setSpeedPhase('upload', 'Measuring upload throughput');
+        const uploadMbps = await measureBandwidth('upload');
+        safeText('upload', uploadMbps.toFixed(1) + ' Mbps');
+        appendResult('Upload: ' + uploadMbps.toFixed(1) + ' Mbps');
         safeText('last-run', timeStamp());
         setStatus('Complete', 'ok');
-
         addGraphPoint(downloadMbps, uploadMbps, latencyMs);
-
-        const summary = [
-          'Latency: ' + latencyMs.toFixed(1) + ' ms',
-          'Download: ' + downloadMbps.toFixed(1) + ' Mbps',
-          'Upload: ' + uploadMbps.toFixed(1) + ' Mbps',
-          'Method: direct Cloudflare endpoint timing (no module import)'
-        ].join('\n');
-        const summaryBox = el('speed-test-summary');
-        if (summaryBox) summaryBox.textContent = summary;
-
-        appendResult('Latency: ' + latencyMs.toFixed(1) + ' ms');
-        appendResult('Download: ' + downloadMbps.toFixed(1) + ' Mbps');
-        appendResult('Upload: ' + uploadMbps.toFixed(1) + ' Mbps');
+        const summary = ['Latency: ' + latencyMs.toFixed(1) + ' ms', 'Download: ' + downloadMbps.toFixed(1) + ' Mbps', 'Upload: ' + uploadMbps.toFixed(1) + ' Mbps', 'Method: direct Cloudflare endpoint timing with live progress updates'].join('\n');
+        const summaryBox = el('speed-test-summary'); if (summaryBox) summaryBox.textContent = summary;
         logLine('Speed test complete: ' + downloadMbps.toFixed(1) + ' down, ' + uploadMbps.toFixed(1) + ' up');
         updateHistory({ when: timeStamp(), download: downloadMbps.toFixed(1) + ' Mbps', upload: uploadMbps.toFixed(1) + ' Mbps', latency: latencyMs.toFixed(1) + ' ms' });
       } catch (error) {
@@ -516,203 +142,26 @@
         setStatus('Failed', 'error');
         safeText('last-run', 'Failed');
         const summaryBox = el('speed-test-summary');
-        if (summaryBox) {
-          summaryBox.textContent = 'Cloudflare speed test failed:\n' + message + '\n\nIf this device/network blocks cross-origin timing, serve the app over http(s) or run it inside the packaged Android app.';
-        }
+        if (summaryBox) summaryBox.textContent = 'Cloudflare speed test failed:\n' + message + '\n\nIf this device/network blocks cross-origin timing, serve the app over http(s) or run it inside the packaged Android app.';
         appendResult('Cloudflare speed test failed: ' + message);
         logLine('Speed test failed: ' + message);
       } finally {
-        state.running = false;
-        if (btn) btn.disabled = false;
+        state.running = false; if (btn) btn.disabled = false;
       }
     }
-
-    async function measureFetch(url, timeoutMs) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
-      const started = performance.now();
-      try {
-        await fetch(url, { mode: 'no-cors', cache: 'no-store', signal: controller.signal });
-        return { ok: true, ms: Math.round(performance.now() - started) };
-      } catch (_) {
-        return { ok: false, ms: Math.round(performance.now() - started) };
-      } finally {
-        clearTimeout(timer);
-      }
-    }
-
-    async function runPing() {
-      clearResults();
-      appendResult('=== Ping ===');
-      const targets = [
-        { label: 'Google', url: 'https://www.google.com/generate_204' },
-        { label: 'Cloudflare', url: 'https://www.cloudflare.com/cdn-cgi/trace' },
-        { label: 'GStatic', url: 'https://www.gstatic.com/generate_204' }
-      ];
-      for (const target of targets) {
-        const result = await measureFetch(target.url, 3000);
-        const line = target.label + ': ' + (result.ok ? result.ms + ' ms' : 'failed or blocked');
-        appendResult(line);
-        logLine(line);
-      }
-      safeText('last-run', timeStamp());
-    }
-
-    async function runNSLookup() {
-      clearResults();
-      const domain = prompt('Domain to look up:', 'example.com') || 'example.com';
-      appendResult('=== NSLookup for ' + domain + ' ===');
-      try {
-        const res = await fetch('https://cloudflare-dns.com/dns-query?name=' + encodeURIComponent(domain) + '&type=A', {
-          headers: { Accept: 'application/dns-json' }
-        });
-        const data = await res.json();
-        if (data.Answer && data.Answer.length) data.Answer.forEach(r => appendResult((r.type === 28 ? 'AAAA' : 'A') + ': ' + r.data));
-        else appendResult('No A records found');
-      } catch (error) {
-        appendResult('NSLookup failed: ' + error.message);
-      }
-      logLine('NSLookup run for ' + domain);
-      safeText('last-run', timeStamp());
-    }
-
-    async function getLocalIPs() {
-      return new Promise(resolve => {
-        const ips = new Set();
-        try {
-          const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-          pc.createDataChannel('');
-          pc.onicecandidate = e => {
-            if (!e.candidate) {
-              try { pc.close(); } catch (_) {}
-              resolve([...ips]);
-              return;
-            }
-            const match = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[0-9a-f:]+)/i.exec(e.candidate.candidate || '');
-            if (match && match[1]) ips.add(match[1]);
-          };
-          pc.createOffer().then(o => pc.setLocalDescription(o)).catch(() => resolve([]));
-          setTimeout(() => { try { pc.close(); } catch (_) {} resolve([...ips]); }, 1400);
-        } catch (_) {
-          resolve([]);
-        }
-      });
-    }
-
-    async function runIPConfig() {
-      clearResults();
-      appendResult('=== IP Config + Local IP ===');
-      appendResult('Browser view only. Full adapter/gateway info requires native access.');
-      appendResult('');
-      appendResult('Local IP addresses:');
-      try {
-        const ips = await getLocalIPs();
-        if (ips.length) ips.forEach(ip => appendResult('  ' + ip));
-        else appendResult('  None detected');
-      } catch (error) {
-        appendResult('  Error: ' + error.message);
-      }
-      appendResult('');
-      appendResult('Public IP:');
-      try {
-        const res = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
-        const data = await res.json();
-        appendResult('  ' + (data.ip || 'unknown'));
-      } catch (error) {
-        appendResult('  Failed: ' + error.message);
-      }
-      logLine('IP config run');
-      safeText('last-run', timeStamp());
-    }
-
-    function copyResults() {
-      const box = el('results-box');
-      if (!box || !box.value) return alert('No results to copy');
-      navigator.clipboard.writeText(box.value).then(() => logLine('Results copied')).catch(() => {
-        box.select();
-        document.execCommand('copy');
-        logLine('Results copied via fallback');
-      });
-    }
-
-    function exportReport() {
-      const results = el('results-box') ? el('results-box').value : '';
-      const log = el('log') ? el('log').innerText : '';
-      const content = [
-        'Network Doctor Report',
-        'Generated: ' + new Date().toLocaleString(),
-        '',
-        '=== Diagnostic Results ===',
-        results || '(no results yet)',
-        '',
-        '=== Activity Log ===',
-        log || '(empty)',
-        '',
-        'Note: Download and upload are measured using direct Cloudflare endpoint timing.'
-      ].join('\n');
-      const blob = new Blob([content], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'network-doctor-report.txt';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    }
-
-    function clearAll() {
-      safeText('status', 'Idle');
-      const status = el('status');
-      if (status) status.className = 'value';
-      const hint = el('status-hint');
-      if (hint) hint.textContent = 'Ready to start a speed test';
-      safeText('latency', '-- ms');
-      safeText('download', '-- Mbps');
-      safeText('upload', '-- Mbps');
-      safeText('last-run', '--');
-      const summary = el('speed-test-summary');
-      if (summary) summary.textContent = 'No speed test run yet.';
-      const log = el('log');
-      if (log) log.innerHTML = '';
-      const results = el('results-box');
-      if (results) results.value = '';
-      state.history = [];
-      state.graphs.labels = [];
-      state.graphs.download = [];
-      state.graphs.upload = [];
-      state.graphs.latency = [];
-      updateHistory();
-      syncCharts();
-      logLine('Cleared all data');
-    }
+    async function measureFetch(url, timeoutMs = 3000){ const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), timeoutMs); const started = performance.now(); try { await fetch(url, { mode:'no-cors', cache:'no-store', signal: controller.signal }); return { ok:true, ms: Math.round(performance.now() - started) }; } catch (_) { return { ok:false, ms: Math.round(performance.now() - started) }; } finally { clearTimeout(timer); } }
+    async function runPing(){ clearResults(); appendResult('=== Ping ==='); const targets = [{ label:'Google', url:'https://www.google.com/generate_204' }, { label:'Cloudflare', url:'https://www.cloudflare.com/cdn-cgi/trace' }, { label:'GStatic', url:'https://www.gstatic.com/generate_204' }]; for (const target of targets) { const result = await measureFetch(target.url, 3000); const line = target.label + ': ' + (result.ok ? result.ms + ' ms' : 'failed or blocked'); appendResult(line); logLine(line); } safeText('last-run', timeStamp()); }
+    async function runNSLookup(){ clearResults(); const domain = prompt('Domain to look up:', 'example.com') || 'example.com'; appendResult('=== NSLookup for ' + domain + ' ==='); try { const res = await fetch('https://cloudflare-dns.com/dns-query?name=' + encodeURIComponent(domain) + '&type=A', { headers: { Accept: 'application/dns-json' } }); const data = await res.json(); if (data.Answer && data.Answer.length) data.Answer.forEach(r => appendResult((r.type === 28 ? 'AAAA' : 'A') + ': ' + r.data)); else appendResult('No A records found'); } catch (error) { appendResult('NSLookup failed: ' + error.message); } logLine('NSLookup run for ' + domain); safeText('last-run', timeStamp()); }
+    async function getLocalIPs(){ return new Promise(resolve => { const ips = new Set(); try { const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }); pc.createDataChannel(''); pc.onicecandidate = e => { if (!e.candidate) { try { pc.close(); } catch (_) {} resolve([...ips]); return; } const match = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[0-9a-f:]+)/i.exec(e.candidate.candidate || ''); if (match && match[1]) ips.add(match[1]); }; pc.createOffer().then(o => pc.setLocalDescription(o)).catch(() => resolve([])); setTimeout(() => { try { pc.close(); } catch (_) {} resolve([...ips]); }, 1400); } catch (_) { resolve([]); } }); }
+    async function runIPConfig(){ clearResults(); appendResult('=== IP Config + Local IP ==='); appendResult('Browser view only. Full adapter/gateway info requires native access.'); appendResult(''); appendResult('Local IP addresses:'); try { const ips = await getLocalIPs(); if (ips.length) ips.forEach(ip => appendResult('  ' + ip)); else appendResult('  None detected'); } catch (error) { appendResult('  Error: ' + error.message); } appendResult(''); appendResult('Public IP:'); try { const res = await fetch('https://api.ipify.org?format=json', { cache:'no-store' }); const data = await res.json(); appendResult('  ' + (data.ip || 'unknown')); } catch (error) { appendResult('  Failed: ' + error.message); } logLine('IP config run'); safeText('last-run', timeStamp()); }
+    function copyResults(){ const box = el('results-box'); if (!box || !box.value) return alert('No results to copy'); navigator.clipboard.writeText(box.value).then(() => logLine('Results copied')).catch(() => { box.select(); document.execCommand('copy'); logLine('Results copied via fallback'); }); }
+    function exportReport(){ const results = el('results-box') ? el('results-box').value : ''; const log = el('log') ? el('log').innerText : ''; const content = ['Network Doctor Report', 'Generated: ' + new Date().toLocaleString(), '', '=== Diagnostic Results ===', results || '(no results yet)', '', '=== Activity Log ===', log || '(empty)', '', 'Note: Download and upload are measured using direct Cloudflare endpoint timing with progress updates.'].join('\n'); const blob = new Blob([content], { type:'text/plain' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'network-doctor-report.txt'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
+    function clearAll(){ safeText('status', 'Idle'); const status = el('status'); if (status) status.className = 'value'; const hint = el('status-hint'); if (hint) hint.textContent = 'Ready to start a speed test'; safeText('latency', '-- ms'); safeText('download', '-- Mbps'); safeText('upload', '-- Mbps'); safeText('last-run', '--'); const summary = el('speed-test-summary'); if (summary) summary.textContent = 'No speed test run yet.'; const log = el('log'); if (log) log.innerHTML = ''; const results = el('results-box'); if (results) results.value = ''; state.history = []; state.graphs.labels = []; state.graphs.download = []; state.graphs.upload = []; state.graphs.latency = []; updateHistory(); syncCharts(); logLine('Cleared all data'); }
 
     window.addEventListener('DOMContentLoaded', () => {
-      const speedBtn = el('start-speed-test-btn');
-      const clearBtn = el('clear-results-btn');
-      const copyBtn = el('copy-results-btn');
-      const pingBtn = el('ping-btn');
-      const nslookupBtn = el('nslookup-btn');
-      const ipconfigBtn = el('ipconfig-btn');
-      const exportBtn = el('export-report-btn');
-
-      if (speedBtn) speedBtn.addEventListener('click', runSpeedTest);
-      if (clearBtn) clearBtn.addEventListener('click', clearResults);
-      if (copyBtn) copyBtn.addEventListener('click', copyResults);
-      if (pingBtn) pingBtn.addEventListener('click', runPing);
-      if (nslookupBtn) nslookupBtn.addEventListener('click', runNSLookup);
-      if (ipconfigBtn) ipconfigBtn.addEventListener('click', runIPConfig);
-      if (exportBtn) exportBtn.addEventListener('click', exportReport);
-
-      initCharts();
-      setStatus('Idle');
-      updateHistory();
-      logLine('App ready');
-      if (typeof Chart === 'undefined') {
-        logLine('Chart.js unavailable; charts are disabled but diagnostic buttons remain active');
-        const warn = el('file-warning');
-        if (warn) warn.style.display = 'block';
-      }
+      const speedBtn = el('start-speed-test-btn'); const clearBtn = el('clear-results-btn'); const copyBtn = el('copy-results-btn'); const pingBtn = el('ping-btn'); const nslookupBtn = el('nslookup-btn'); const ipconfigBtn = el('ipconfig-btn'); const exportBtn = el('export-report-btn');
+      if (speedBtn) speedBtn.addEventListener('click', runSpeedTest); if (clearBtn) clearBtn.addEventListener('click', clearResults); if (copyBtn) copyBtn.addEventListener('click', copyResults); if (pingBtn) pingBtn.addEventListener('click', runPing); if (nslookupBtn) nslookupBtn.addEventListener('click', runNSLookup); if (ipconfigBtn) ipconfigBtn.addEventListener('click', runIPConfig); if (exportBtn) exportBtn.addEventListener('click', exportReport);
+      initCharts(); setStatus('Idle'); updateHistory(); logLine('App ready'); if (typeof Chart === 'undefined') { logLine('Chart.js unavailable; charts are disabled but diagnostic buttons remain active'); const warn = el('file-warning'); if (warn) warn.style.display = 'block'; }
     });
   </script>
 </body>
