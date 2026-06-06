@@ -121,6 +121,11 @@
       return samples.length ? median(samples) : null;
     }
 
+    function describeUploadBatch(size, successes, total, durationMs, mbps) {
+      const rateText = Number.isFinite(mbps) ? mbps.toFixed(1) + ' Mbps' : 'n/a';
+      return 'Upload diagnostics — ' + size + ' bytes: ' + successes + '/' + total + ' succeeded in ' + Math.round(durationMs) + ' ms (' + rateText + ')';
+    }
+
     async function measureBandwidth(direction){
       const sizes = direction === 'download' ? DOWNLOAD_SIZES : UPLOAD_SIZES;
       const parallelStreams = 4;
@@ -134,10 +139,23 @@
         );
         const batchEnd = performance.now();
         const valid = batch.filter(Boolean);
-        if (!valid.length) continue;
+        if (!valid.length) {
+          if (direction === 'upload') {
+            const diag = describeUploadBatch(size, 0, parallelStreams, batchEnd - batchStart, 0);
+            appendResult(diag);
+            logLine(diag);
+          }
+          continue;
+        }
         const totalBytes = valid.reduce((sum, item) => sum + (item.bytesRead != null ? item.bytesRead : size * 1.005), 0);
         const durationMs = Math.max(1, batchEnd - batchStart);
-        samples.push((totalBytes * 8) / (durationMs / 1000) / 1_000_000);
+        const mbps = (totalBytes * 8) / (durationMs / 1000) / 1_000_000;
+        samples.push(mbps);
+        if (direction === 'upload') {
+          const diag = describeUploadBatch(size, valid.length, parallelStreams, durationMs, mbps);
+          appendResult(diag);
+          logLine(diag);
+        }
       }
       return samples.length ? percentile(samples, 0.9) : null;
     }
